@@ -966,7 +966,9 @@ if (view === 'manual-setup') {
 
         <nav className="navbar">
 
-          <div className="logo">PORTELYX</div>
+          <div className="logo">
+           <img src="/portelyx-logo.png" alt="PORTELYX" />
+          </div>
 
           <button
 

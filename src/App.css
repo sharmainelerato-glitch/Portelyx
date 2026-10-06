@@ -60,10 +60,17 @@ button {
 }
 
 .logo {
-  color: #7df0ae;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.34em;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logo img {
+  display: block;
+  width: auto;
+  height: 42px;
+  max-width: 220px;
+  object-fit: contain;
 }
 
 .nav-button {
