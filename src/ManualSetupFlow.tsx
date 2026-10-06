@@ -398,7 +398,7 @@ export default function ManualSetupFlow(props: Props) {
               <div className="twin-reveal-grid">
                 <article className="twin-reveal-hero">
                   <span>MONTHLY SURPLUS</span>
-                  <strong>{formatEnteredMoney(monthlySurplus)}</strong>
+                  <strong>{formatEnteredMoney(String(monthlySurplus))}</strong>
                   <small>Income minus monthly spending</small>
                 </article>
 

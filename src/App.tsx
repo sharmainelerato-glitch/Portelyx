@@ -10,10 +10,8 @@ import ConnectAccounts, {
 
 } from './ConnectAccounts'
 
-import GoalBuilder, {
-
-  type GoalInput,
-
+import {
+  type GoalInput,
 } from './GoalBuilder'
 
 import ManualSetupFlow from './ManualSetupFlow'
@@ -221,29 +219,7 @@ const [pendingStatement, setPendingStatement] =
 const [connectedSource, setConnectedSource] =
   useState<ReviewedConnectedAccountImport | null>(null)
 
-  const filteredCurrencies = currencies
-
-  .filter((currency) => {
-
-    const search = currencySearch.toLowerCase().trim()
-
-    if (!search) {
-
-      return false
-
-    }
-
-    return (
-
-      currency.code.toLowerCase().includes(search) ||
-
-      currency.name.toLowerCase().includes(search)
-
-    )
-
-  })
-
-  .slice(0, 8)
+  
 
   const [question, setQuestion] = useState('')
 

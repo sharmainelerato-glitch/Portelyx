@@ -243,9 +243,9 @@ export default function WorkspaceShell({
   const [goalIntelligence, setGoalIntelligence] = useState<GoalIntelligenceResponse | null>(null)
   const [goalIntelligenceLoading, setGoalIntelligenceLoading] = useState(false)
   const [goalIntelligenceError, setGoalIntelligenceError] = useState<string | null>(null)
-  const [agentResponse, setAgentResponse] = useState<AgentScenarioResponse | null>(null)
+  const [, setAgentResponse] = useState<AgentScenarioResponse | null>(null)
   const [agentLoading, setAgentLoading] = useState(false)
-  const [agentError, setAgentError] = useState<string | null>(null)
+  const [, setAgentError] = useState<string | null>(null)
   const [aiInput, setAiInput] = useState('')
   const [aiMessages, setAiMessages] = useState<AIChatMessage[]>([])
   const [aiChatLoading, setAiChatLoading] = useState(false)
@@ -433,19 +433,8 @@ const formatTimestamp = (value: string | null | undefined) => {
   const availableCash = Number(profile.cash?.available ?? 0)
   const totalAssets = Number(profile.assets?.total ?? 0)
   const totalDebt = Number(profile.debts?.total ?? 0)
-  const holdingValues = holdings.map((holding) =>
-  Math.max(
-    0,
-    Number(holding.quantity || 0) *
-      Number(holding.current_price || 0),
-  ),
-)
-
 const portfolioValue =
   comparablePortfolioValue ?? 0
-
-const largestHoldingValue =
-  comparableLargestHolding ?? 0
 
 const concentrationPct =
   comparableConcentrationPct ?? 0
