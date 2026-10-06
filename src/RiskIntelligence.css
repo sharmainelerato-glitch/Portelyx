@@ -1,0 +1,174 @@
+
+/* =========================================================
+   PORTELYX RISK INTELLIGENCE
+   ========================================================= */
+
+.px-risk-heading { align-items: center; }
+
+.px-risk-badge {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 999px;
+  background: rgba(255,255,255,.018);
+  color: #8fa0b1;
+  font-size: .61rem;
+  font-weight: 700;
+}
+.px-risk-badge.low { color:#7df0ae; border-color:rgba(125,240,174,.13); background:rgba(125,240,174,.025); }
+.px-risk-badge.moderate { color:#d9c98e; border-color:rgba(217,201,142,.13); background:rgba(217,201,142,.025); }
+.px-risk-badge.high { color:#e6a0a0; border-color:rgba(230,160,160,.13); background:rgba(230,160,160,.025); }
+
+.px-risk-hero,
+.px-risk-map,
+.px-risk-bottom {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.px-risk-hero {
+  display:grid;
+  grid-template-columns: 1.35fr .65fr;
+  gap:12px;
+}
+
+.px-resilience-card,
+.px-risk-driver-card,
+.px-risk-map article,
+.px-goal-risk-card,
+.px-stress-card {
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:18px;
+  background:rgba(255,255,255,.014);
+  box-shadow:0 18px 44px rgba(0,0,0,.09), 0 1px 0 rgba(255,255,255,.012) inset;
+}
+
+.px-resilience-card { padding:20px; }
+.px-risk-card-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+.px-risk-card-head > div > span,
+.px-risk-driver-card > span,
+.px-goal-risk-card span,
+.px-stress-card > span {
+  color:#7df0ae;
+  font-size:.56rem;
+  font-weight:760;
+  letter-spacing:.12em;
+}
+.px-risk-card-head h2,
+.px-risk-driver-card h2,
+.px-goal-risk-card h2,
+.px-stress-card h2 {
+  margin:6px 0 0;
+  color:#edf2f6;
+  font-size:1rem;
+  font-weight:590;
+  letter-spacing:-.018em;
+}
+
+.px-resilience-body {
+  margin-top:20px;
+  display:grid;
+  grid-template-columns:150px 1fr;
+  align-items:center;
+  gap:28px;
+}
+
+.px-score-ring {
+  --risk-score: 0;
+  width:138px;
+  aspect-ratio:1;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:conic-gradient(#7df0ae calc(var(--risk-score) * 1%), rgba(255,255,255,.045) 0);
+  position:relative;
+}
+.px-score-ring::after {
+  content:"";
+  position:absolute;
+  inset:9px;
+  border-radius:50%;
+  background:#091521;
+  border:1px solid rgba(255,255,255,.035);
+}
+.px-score-ring > div { position:relative; z-index:1; text-align:center; display:flex; flex-direction:column; }
+.px-score-ring strong { color:#eef4f6; font-size:1.7rem; font-weight:590; letter-spacing:-.04em; }
+.px-score-ring span { color:#637489; font-size:.58rem; }
+
+.px-resilience-copy > span { color:#627489; font-size:.55rem; font-weight:700; letter-spacing:.1em; }
+.px-resilience-copy > strong { display:block; margin-top:5px; color:#dce5eb; font-size:1.25rem; font-weight:590; }
+.px-resilience-copy p { max-width:410px; margin:8px 0 0; color:#718196; font-size:.69rem; line-height:1.55; }
+
+.px-risk-driver-card { padding:20px; }
+.px-risk-driver-list { margin-top:18px; display:flex; flex-direction:column; }
+.px-risk-driver-list div {
+  min-height:43px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-top:1px solid rgba(255,255,255,.045);
+}
+.px-risk-driver-list div:first-child { border-top:0; }
+.px-risk-driver-list span { color:#8291a2; font-size:.65rem; }
+.px-risk-driver-list strong,
+.px-risk-map header strong { font-size:.58rem; font-weight:700; }
+.px-risk-driver-list .low, .px-risk-map .low { color:#7df0ae; }
+.px-risk-driver-list .moderate, .px-risk-map .moderate { color:#d9c98e; }
+.px-risk-driver-list .high, .px-risk-map .high { color:#e6a0a0; }
+.px-risk-driver-list .not-enough-data, .px-risk-map .not-enough-data { color:#68798b; }
+
+.px-risk-map {
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+.px-risk-map article { padding:16px; min-width:0; }
+.px-risk-map header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.px-risk-map header > span { color:#627388; font-size:.52rem; font-weight:750; letter-spacing:.1em; }
+.px-risk-map h3 { margin:19px 0 0; color:#e8eef3; font-size:1.22rem; font-weight:590; letter-spacing:-.025em; }
+.px-risk-map p { min-height:42px; margin:6px 0 0; color:#637489; font-size:.61rem; line-height:1.5; }
+.px-risk-scale { height:4px; margin-top:14px; overflow:hidden; border-radius:999px; background:rgba(255,255,255,.045); }
+.px-risk-scale i { display:block; height:100%; border-radius:inherit; background:#7df0ae; }
+.px-risk-scale.inverse i { background:#8292a4; }
+.px-risk-map small { display:block; margin-top:8px; color:#536477; font-size:.54rem; }
+
+.px-risk-bottom {
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:12px;
+  padding-bottom:10px;
+}
+.px-goal-risk-card,
+.px-stress-card { padding:18px; }
+.px-goal-risk-card { display:flex; align-items:center; justify-content:space-between; gap:24px; }
+.px-goal-risk-card p,
+.px-stress-card p { margin:8px 0 0; color:#65768a; font-size:.63rem; line-height:1.5; }
+.px-goal-risk-card > strong { color:#dce5eb; font-size:1.5rem; font-weight:590; letter-spacing:-.03em; }
+
+.px-stress-card button {
+  margin-top:15px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#7df0ae;
+  cursor:pointer;
+  font:inherit;
+  font-size:.63rem;
+  font-weight:700;
+}
+.px-stress-card button b { margin-left:7px; font-weight:500; }
+
+@media (max-width:900px) {
+  .px-risk-map { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:760px) {
+  .px-risk-hero,.px-risk-bottom { grid-template-columns:1fr; }
+}
+@media (max-width:560px) {
+  .px-risk-map { grid-template-columns:1fr; }
+  .px-resilience-body { grid-template-columns:1fr; }
+}

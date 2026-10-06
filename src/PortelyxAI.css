@@ -1,0 +1,32 @@
+/* Portelyx AI backend result — additive drawer styles */
+.px-ai-result{margin-top:16px;padding:16px;border:1px solid rgba(111,224,190,.14);border-radius:16px;background:rgba(111,224,190,.045)}
+.px-ai-result>span,.px-ai-result-heading span,.px-ai-tools>span{display:block;margin-bottom:7px;color:#78cbb3;font-size:9px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
+.px-ai-result>strong,.px-ai-result-heading strong{display:block;color:#eef5f7;font-size:14px;line-height:1.4}
+.px-ai-result>p{margin:8px 0 0;color:#98a9b4;font-size:12px;line-height:1.55}
+.px-ai-result-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.px-ai-result-heading em{flex:0 0 auto;padding:5px 7px;border:1px solid rgba(111,224,190,.14);border-radius:999px;color:#9edccb;font-size:8px;font-style:normal;white-space:nowrap}
+.px-ai-result-metrics{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:14px;overflow:hidden;border:1px solid rgba(255,255,255,.055);border-radius:12px;background:rgba(255,255,255,.055)}
+.px-ai-result-metrics>div{min-width:0;padding:11px;background:#0d1b25}
+.px-ai-result-metrics span{display:block;margin-bottom:4px;color:#758794;font-size:8px;letter-spacing:.07em;text-transform:uppercase}
+.px-ai-result-metrics strong{display:block;overflow:hidden;color:#edf4f7;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.px-ai-tools{margin-top:14px}
+.px-ai-tools>div{display:flex;flex-wrap:wrap;gap:6px}
+.px-ai-tools b{padding:5px 7px;border:1px solid rgba(255,255,255,.07);border-radius:999px;background:rgba(255,255,255,.025);color:#aab8c1;font-size:9px;font-weight:600;text-transform:capitalize}
+.px-ai-explanation{margin:14px 0 0!important;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);color:#91a2ad!important;font-size:11px!important;line-height:1.55!important}
+.px-ai-result-error{border-color:rgba(220,142,105,.2);background:rgba(220,142,105,.05)}
+.px-ai-result-error>span{color:#d9a27e}
+@media(max-width:520px){.px-ai-result-metrics{grid-template-columns:1fr}.px-ai-result-heading{flex-direction:column}}
+/* Allow Portelyx AI drawer to scroll when results are long */
+.px-ai-drawer {
+  height: calc(100vh - 64px);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto !important;
+  overflow-x: hidden;
+}
+
+.px-ai-content {
+  min-height: 100%;
+  height: auto !important;
+  overflow: visible !important;
+  padding-bottom: 32px;
+}

@@ -1,0 +1,233 @@
+.statement-setup-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 15% 85%, rgba(24, 118, 102, .11), transparent 34%),
+    #06101b;
+  color: #eef3f7;
+}
+
+.statement-setup-nav {
+  min-height: 78px;
+  padding: 0 clamp(28px, 4vw, 58px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statement-setup-shell {
+  width: min(1120px, calc(100% - 44px));
+  margin: 54px auto 80px;
+}
+
+.statement-setup-heading {
+  max-width: 720px;
+  margin-bottom: 30px;
+}
+
+.statement-setup-heading p,
+.statement-normalized-preview > p {
+  margin: 0 0 10px;
+  color: #79f0b0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+.statement-setup-heading h1 {
+  margin: 0 0 12px;
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 1.02;
+}
+
+.statement-setup-heading span {
+  color: rgba(238, 243, 247, .62);
+  line-height: 1.7;
+}
+
+.statement-setup-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, .82fr);
+  gap: 18px;
+}
+
+.statement-setup-card,
+.statement-normalized-preview {
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 22px;
+  background: rgba(10, 22, 34, .8);
+  padding: 24px;
+}
+
+.statement-source {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding-bottom: 20px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.statement-source > span {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(121,240,176,.08);
+  color: #79f0b0;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.statement-source div {
+  display: grid;
+  gap: 4px;
+}
+
+.statement-source small,
+.statement-period-control small,
+.statement-normalized-note span {
+  color: rgba(238,243,247,.55);
+}
+
+.statement-setup-card label {
+  display: grid;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.statement-setup-card label > span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.statement-currency-search {
+  position: relative;
+}
+
+.statement-currency-search > input,
+.statement-period-control input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  background: rgba(3,11,19,.8);
+  color: #eef3f7;
+  padding: 13px 14px;
+  outline: none;
+}
+
+.statement-currency-search > input:focus,
+.statement-period-control input:focus {
+  border-color: rgba(121,240,176,.55);
+}
+
+.statement-currency-results {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 7px);
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 7px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 14px;
+  background: #091522;
+  box-shadow: 0 18px 50px rgba(0,0,0,.34);
+}
+
+.statement-currency-results button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #eef3f7;
+  text-align: left;
+  padding: 11px 12px;
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.statement-currency-results button:hover {
+  background: rgba(255,255,255,.05);
+}
+
+.statement-currency-results span {
+  color: rgba(238,243,247,.58);
+}
+
+.statement-period-control {
+  display: grid;
+  gap: 6px;
+}
+
+.statement-period-note,
+.statement-normalized-note {
+  margin-top: 20px;
+  padding: 14px 15px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 13px;
+  color: rgba(238,243,247,.62);
+  line-height: 1.6;
+  font-size: 12px;
+}
+
+.statement-normalized-preview h2 {
+  margin: 0 0 20px;
+  font-size: 24px;
+}
+
+.statement-normalized-values {
+  display: grid;
+  gap: 10px;
+}
+
+.statement-normalized-values > div {
+  padding: 15px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px;
+  background: rgba(255,255,255,.02);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.statement-normalized-values span {
+  color: rgba(238,243,247,.6);
+  font-size: 13px;
+}
+
+.statement-normalized-note {
+  display: grid;
+  gap: 5px;
+}
+
+.statement-confirm-button {
+  width: 100%;
+  margin-top: 18px;
+  min-height: 48px;
+  border: 1px solid rgba(121,240,176,.28);
+  border-radius: 13px;
+  background: rgba(121,240,176,.1);
+  color: #eef3f7;
+  font-weight: 750;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.statement-confirm-button:disabled {
+  opacity: .38;
+  cursor: not-allowed;
+}
+
+@media (max-width: 860px) {
+  .statement-setup-grid {
+    grid-template-columns: 1fr;
+  }
+}

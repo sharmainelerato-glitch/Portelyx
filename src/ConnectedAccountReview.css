@@ -1,0 +1,16 @@
+
+.account-import-review{display:grid;gap:18px;max-width:980px;margin:0 auto}
+.account-import-summary,.account-import-row,.account-import-totals article{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);border-radius:18px}
+.account-import-summary{padding:22px}
+.account-import-summary h2{margin:10px 0 6px}
+.account-import-summary p{margin:0;opacity:.7}
+.account-import-list{display:grid;gap:10px}
+.account-import-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 20px}
+.account-import-row>div{display:grid;gap:5px}
+.account-import-row span{font-size:.82rem;opacity:.62;text-transform:capitalize}
+.account-import-totals{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.account-import-totals article{display:grid;gap:8px;padding:18px}
+.account-import-totals article>strong{margin-bottom:4px}
+.account-import-totals span{font-size:.88rem;opacity:.72}
+.connect-primary:disabled{cursor:wait;opacity:.68}
+@media(max-width:700px){.account-import-row{align-items:flex-start;flex-direction:column}}

@@ -1,0 +1,39 @@
+
+/* Real Case File PDF export controls */
+.px-report-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.px-report-download {
+  height: 34px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(125, 240, 174, .14);
+  border-radius: 9px;
+  background: rgba(125, 240, 174, .055);
+  color: #baf7d2;
+  cursor: pointer;
+  font: inherit;
+  font-size: .61rem;
+  font-weight: 720;
+}
+
+.px-report-download:hover {
+  background: rgba(125, 240, 174, .085);
+}
+
+.px-report-download span {
+  color: #7df0ae;
+  font-size: .8rem;
+}
+
+@media(max-width: 640px) {
+  .px-report-actions {
+    align-items: flex-end;
+    flex-direction: column;
+  }
+}
