@@ -1,6 +1,8 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { jsPDF } from 'jspdf'
 import { apiUrl } from './api'
+import McpSimulator from './McpSimulator'
+import { usePortelyxLanguage } from './i18n'
 import './WorkspaceShell.css'
 import './ScenarioLab.css'
 import './RiskIntelligence.css'
@@ -148,6 +150,7 @@ const WORKSPACE_TO_AI: Record<WorkspaceSection, string> = {
   risk: 'risk',
   reports: 'reports',
   sources: 'data-sources',
+  'mcp-simulator': 'decision',
 }
 
 type ConnectedAccountProvenance = {
@@ -207,6 +210,7 @@ type WorkspaceSection =
   | 'risk'
   | 'reports'
   | 'sources'
+  | 'mcp-simulator'
 
 type Props = {
   profile: FinancialProfile
@@ -237,6 +241,7 @@ export default function WorkspaceShell({
   onUseMyData,
   onExit,
 }: Props) {
+  const { t, languageCode, languageName } = usePortelyxLanguage()
   const [section, setSection] = useState<WorkspaceSection>('overview')
   const [menuOpen, setMenuOpen] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
@@ -298,7 +303,7 @@ export default function WorkspaceShell({
       } catch (error) {
         if (!cancelled) {
           setGoalIntelligenceError(
-            error instanceof Error ? error.message : 'Goal Intelligence is unavailable.',
+            error instanceof Error ? error.message : t('workspace.goalIntelligenceUnavailable'),
           )
         }
       } finally {
@@ -416,7 +421,7 @@ const connectedIngestedAt =
   connectedSources[0]?.ingested_at ?? null
 
 const formatTimestamp = (value: string | null | undefined) => {
-  if (!value) return 'Not supplied'
+  if (!value) return t('workspace.notSupplied')
 
   const parsed = new Date(value)
 
@@ -433,8 +438,12 @@ const formatTimestamp = (value: string | null | undefined) => {
   const availableCash = Number(profile.cash?.available ?? 0)
   const totalAssets = Number(profile.assets?.total ?? 0)
   const totalDebt = Number(profile.debts?.total ?? 0)
+  
+
 const portfolioValue =
   comparablePortfolioValue ?? 0
+
+
 
 const concentrationPct =
   comparableConcentrationPct ?? 0
@@ -511,6 +520,13 @@ const concentrationPct =
         : resilienceScore >= 51
           ? 'Moderate'
           : 'High'
+
+  const riskText = (level: string) => {
+    if (level === 'Low') return t('workspace.riskLow')
+    if (level === 'Moderate') return t('workspace.riskModerate')
+    if (level === 'High') return t('workspace.riskHigh')
+    return t('workspace.notEnoughData')
+  }
 
   const atRiskGoals = goals.filter((goal) => {
     const remaining = Math.max(0, goal.target_amount - goal.current_saved)
@@ -610,7 +626,7 @@ const concentrationPct =
 
     doc.setFontSize(22)
     doc.setTextColor(19, 26, 34)
-    doc.text('Financial Twin Case File', left, y)
+    doc.text(t('workspace.caseFileTitle'), left, y)
     y += 8
 
     doc.setFont('helvetica', 'normal')
@@ -618,7 +634,7 @@ const concentrationPct =
     doc.setTextColor(92, 103, 114)
     doc.text(
       doc.splitTextToSize(
-        'A snapshot of the current Financial Twin, measured resilience signals, tracked objectives, investments and scenario evidence.',
+        t('workspace.caseFileDescription'),
         contentWidth,
       ),
       left,
@@ -636,18 +652,18 @@ const concentrationPct =
     line()
 
     // 01 Financial position
-    heading('01', 'Financial position', 'Current state of the base Financial Twin.')
+    heading('01', t('workspace.financialPosition'), t('workspace.financialPositionDescription'))
     const gap = 4
     const cardWidth = (contentWidth - gap * 2) / 3
-    metric('Estimated net worth', money(netWorth), left, cardWidth)
-    metric('Available cash', money(availableCash), left + cardWidth + gap, cardWidth)
-    metric('Monthly income', money(monthlyIncome), left + (cardWidth + gap) * 2, cardWidth)
+    metric(t('workspace.estimatedNetWorth'), money(netWorth), left, cardWidth)
+    metric(t('workspace.availableCash'), money(availableCash), left + cardWidth + gap, cardWidth)
+    metric(t('workspace.monthlyIncome'), money(monthlyIncome), left + (cardWidth + gap) * 2, cardWidth)
     y += 20
-    metric('Monthly expenses', money(monthlyExpenses), left, cardWidth)
-    metric('Monthly surplus', money(monthlyIncome - monthlyExpenses), left + cardWidth + gap, cardWidth)
+    metric(t('workspace.monthlyExpenses'), money(monthlyExpenses), left, cardWidth)
+    metric(t('workspace.monthlySurplus'), money(monthlyIncome - monthlyExpenses), left + cardWidth + gap, cardWidth)
     metric(
-      'Cash runway',
-      monthlyExpenses > 0 ? `${expenseCoverage.toFixed(1)} months` : 'Not available',
+      t('workspace.cashRunway'),
+      monthlyExpenses > 0 ? t('workspace.monthsValue', { count: expenseCoverage.toFixed(1) }) : t('workspace.notAvailable'),
       left + (cardWidth + gap) * 2,
       cardWidth,
     )
@@ -657,8 +673,8 @@ const concentrationPct =
     // 02 Risk
     heading(
       '02',
-      'Risk findings',
-      'Portelyx resilience signals are heuristic indicators derived from the current twin. They are not a credit score or investment recommendation.',
+      t('workspace.riskFindings'),
+      t('workspace.riskDisclaimer'),
     )
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(18)
@@ -667,7 +683,7 @@ const concentrationPct =
     doc.setFontSize(8)
     doc.setTextColor(100, 111, 122)
     doc.text(
-      overallRisk === 'Not enough data' ? 'Needs more data' : `${overallRisk} measured risk`,
+      overallRisk === 'Not enough data' ? t('workspace.needsMoreData') : t('workspace.measuredRiskValue', { level: riskText(overallRisk) }),
       left + 18,
       y,
     )
@@ -675,24 +691,24 @@ const concentrationPct =
 
     const findings: Array<[string, string, string]> = [
       [
-        'Liquidity',
+        t('workspace.liquidity'),
         liquidityRisk,
         monthlyExpenses > 0
           ? `${expenseCoverage.toFixed(1)} months of cash coverage`
-          : 'Expenses needed',
+          : t('workspace.expensesNeeded'),
       ],
       [
-        'Cash flow',
+        t('workspace.cashFlow'),
         cashFlowRisk,
-        monthlyIncome > 0 ? `${surplusMargin.toFixed(0)}% surplus margin` : 'Income needed',
+        monthlyIncome > 0 ? t('workspace.surplusMarginValue', { value: surplusMargin.toFixed(0) }) : t('workspace.incomeNeeded'),
       ],
-      ['Debt exposure', debtRisk, `${money(totalDebt)} tracked debt`],
+      [t('workspace.debtExposure'), debtRisk, t('workspace.trackedDebtValue', { value: money(totalDebt) })],
       [
-        'Concentration',
+        t('workspace.concentration'),
         concentrationRisk,
         portfolioValue > 0
           ? `${concentrationPct.toFixed(0)}% in largest tracked holding`
-          : 'No tracked portfolio value',
+          : t('workspace.noTrackedPortfolioValue'),
       ],
     ]
 
@@ -714,7 +730,7 @@ const concentrationPct =
     line()
 
     // 03 Coverage
-    heading('03', 'Tracked objectives & investments', 'Coverage represented in this Financial Twin.')
+    heading('03', t('workspace.trackedObjectivesInvestments'), t('workspace.coverageRepresented'))
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(9)
     doc.setTextColor(37, 45, 54)
@@ -726,15 +742,15 @@ const concentrationPct =
     doc.setTextColor(105, 115, 125)
     doc.text(
       holdings.length
-        ? `${money(portfolioValue)} represented across tracked holdings.`
-        : 'No investment holdings represented.',
+        ? t('workspace.investmentCoverageValue', { value: money(portfolioValue) })
+        : t('workspace.noInvestmentHoldingsRepresented'),
       left,
       y,
     )
     doc.text(
       goals.length
         ? `${atRiskGoals.length} goal(s) potentially off pace.`
-        : 'No financial goals represented.',
+        : t('workspace.noFinancialGoalsRepresented'),
       left + contentWidth / 2,
       y,
     )
@@ -742,15 +758,15 @@ const concentrationPct =
     line()
 
     // 04 Scenario evidence
-    heading('04', 'Scenario evidence', 'Most recent deterministic income-interruption test.')
+    heading('04', t('workspace.scenarioEvidence'), t('workspace.scenarioEvidenceDescription'))
     if (jobLossScenario) {
       const scenarioRows: Array<[string, string]> = [
-        ['Test', `${jobLossScenario.months_without_income} months without income`],
-        ['Starting cash', money(jobLossScenario.starting_cash)],
-        ['Cash after period', money(jobLossScenario.cash_after_period)],
-        ['Funding gap', money(jobLossScenario.funding_gap)],
-        ['Cash coverage', `${jobLossScenario.months_cash_can_cover.toFixed(1)} months`],
-        ['Base Twin', 'Unchanged'],
+        [t('workspace.test'), `${t('workspace.monthsWithoutIncomeValue', { count: jobLossScenario.months_without_income })}`],
+        [t('workspace.startingCash'), money(jobLossScenario.starting_cash)],
+        [t('workspace.cashAfterPeriod'), money(jobLossScenario.cash_after_period)],
+        [t('workspace.fundingGap'), money(jobLossScenario.funding_gap)],
+        [t('workspace.cashCoverage'), `${t('workspace.monthsValue', { count: jobLossScenario.months_cash_can_cover.toFixed(1) })}`],
+        [t('workspace.baseTwin'), t('workspace.unchanged')],
       ]
 
       scenarioRows.forEach(([label, value]) => {
@@ -768,7 +784,7 @@ const concentrationPct =
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(8)
       doc.setTextColor(105, 115, 125)
-      doc.text('No scenario evidence was present in this session when the report was generated.', left, y)
+      doc.text(t('workspace.noScenarioEvidenceReport'), left, y)
       y += 8
     }
 
@@ -776,8 +792,8 @@ const concentrationPct =
 
 heading(
   '05',
-  'Data provenance',
-  'Source evidence retained for connected financial data represented in this Financial Twin.',
+  t('workspace.dataProvenance'),
+  t('workspace.dataProvenanceDescription'),
 )
 
 if (connectedSources.length > 0) {
@@ -788,7 +804,7 @@ if (connectedSources.length > 0) {
     doc.setFontSize(9)
     doc.setTextColor(37, 45, 54)
     doc.text(
-      `${source.provider ?? 'Financial provider'} · ${(source.environment ?? 'unknown').toUpperCase()}`,
+      `${source.provider ?? t('workspace.financialProvider')} · ${(source.environment ?? t('workspace.unknown')).toUpperCase()}`,
       left,
       y,
     )
@@ -821,7 +837,7 @@ if (connectedSources.length > 0) {
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(150, 105, 35)
       doc.text(
-        'SANDBOX DATA — testing and demonstration values, not live banking data.',
+        t('workspace.sandboxDataWarning'),
         left,
         y,
       )
@@ -839,7 +855,7 @@ if (connectedSources.length > 0) {
       doc.text(
         account.provider_account_name ||
           account.name ||
-          'Connected account',
+          t('workspace.connectedAccount'),
         left,
         y,
       )
@@ -861,9 +877,9 @@ if (connectedSources.length > 0) {
       doc.setTextColor(105, 115, 125)
 
       const detail =
-        `${account.category || 'account'} · ` +
-        `${account.account_type || account.container || 'provider account'} · ` +
-        `balance source: ${account.provenance?.balance_source_field || 'not supplied'}`
+        `${account.category || t('workspace.account')} · ` +
+        `${account.account_type || account.container || t('workspace.providerAccount')} · ` +
+        t('workspace.balanceSourceValue', { value: account.provenance?.balance_source_field || t('workspace.notSupplied') })
 
       doc.text(
         doc.splitTextToSize(detail, contentWidth),
@@ -880,7 +896,7 @@ if (connectedSources.length > 0) {
   doc.setTextColor(105, 115, 125)
 
   doc.text(
-    'No connected-account provenance is attached to this Financial Twin.',
+    t('workspace.noConnectedProvenance'),
     left,
     y,
   )
@@ -892,8 +908,8 @@ if (connectedSources.length > 0) {
 
 heading(
   '05',
-  'Data provenance',
-  'Source evidence retained for connected financial data represented in this Financial Twin.',
+  t('workspace.dataProvenance'),
+  t('workspace.dataProvenanceDescription'),
 )
 
 if (connectedSources.length > 0) {
@@ -905,10 +921,10 @@ if (connectedSources.length > 0) {
     doc.setTextColor(37, 45, 54)
 
     const providerLabel =
-      source.provider || 'Financial provider'
+      source.provider || t('workspace.financialProvider')
 
     const environmentLabel =
-      (source.environment || 'unknown').toUpperCase()
+      (source.environment || t('workspace.unknown')).toUpperCase()
 
     doc.text(
       `${providerLabel} · ${environmentLabel}`,
@@ -946,7 +962,7 @@ if (connectedSources.length > 0) {
       doc.setTextColor(150, 105, 35)
 
       doc.text(
-        'SANDBOX DATA — testing and demonstration values, not live banking data.',
+        t('workspace.sandboxDataWarning'),
         left,
         y,
       )
@@ -964,7 +980,7 @@ if (connectedSources.length > 0) {
       const accountName =
         account.provider_account_name ||
         account.name ||
-        'Connected account'
+        t('workspace.connectedAccount')
 
       doc.text(
         accountName,
@@ -991,16 +1007,16 @@ if (connectedSources.length > 0) {
       const accountType =
         account.account_type ||
         account.container ||
-        'provider account'
+        t('workspace.providerAccount')
 
       const balanceSource =
         account.provenance?.balance_source_field ||
-        'not supplied'
+        t('workspace.notSupplied')
 
       const detail =
-        `${account.category || 'account'} · ` +
+        `${account.category || t('workspace.account')} · ` +
         `${accountType} · ` +
-        `balance source: ${balanceSource}`
+        t('workspace.balanceSourceValue', { value: balanceSource })
 
       const detailLines =
         doc.splitTextToSize(detail, contentWidth)
@@ -1051,7 +1067,7 @@ if (connectedSources.length > 0) {
   doc.setTextColor(105, 115, 125)
 
   doc.text(
-    'No connected-account provenance is attached to this Financial Twin.',
+    t('workspace.noConnectedProvenance'),
     left,
     y,
   )
@@ -1140,6 +1156,8 @@ if (connectedSources.length > 0) {
           message,
           financial_profile: profile,
           history,
+          language_code: languageCode,
+          language_name: languageName,
           current_page: WORKSPACE_TO_AI[section],
           ui_context: {
             current_section: WORKSPACE_TO_AI[section],
@@ -1199,7 +1217,7 @@ if (connectedSources.length > 0) {
           <button
             className="px-menu-button"
             type="button"
-            aria-label="Open navigation"
+            aria-label={t('workspace.openNavigation')}
             onClick={() => setMenuOpen((value) => !value)}
           >
             <span />
@@ -1212,13 +1230,13 @@ if (connectedSources.length > 0) {
         <div className="px-topbar-right">
           <span className="px-twin-active">
             <i />
-            Twin active
+            {t('workspace.twinActive')}
           </span>
 
           {isDemoProfile && (
   <div className="px-demo-controls">
     <span className="px-demo-badge">
-      Demo Financial Twin
+      {t('workspace.demoFinancialTwin')}
     </span>
 
     <button
@@ -1226,13 +1244,13 @@ if (connectedSources.length > 0) {
       type="button"
       onClick={onUseMyData}
     >
-      Use my data
+      {t('workspace.useMyData')}
       <span>→</span>
     </button>
   </div>
 )}
           <button className="px-exit" type="button" onClick={onExit}>
-            Exit
+            {t('workspace.exit')}
           </button>
         </div>
       </header>
@@ -1240,10 +1258,10 @@ if (connectedSources.length > 0) {
       <div className={`px-layout ${aiOpen ? '' : 'ai-collapsed'}`}>
         <aside className={`px-sidebar ${menuOpen ? 'open' : ''}`}>
           <div className="px-sidebar-title">
-            <span>WORKSPACE</span>
+            <span>{t('workspace.workspace')}</span>
             <button
               type="button"
-              aria-label="Close navigation"
+              aria-label={t('workspace.closeNavigation')}
               onClick={() => setMenuOpen(false)}
             >
               ×
@@ -1256,28 +1274,28 @@ if (connectedSources.length > 0) {
               type="button"
               onClick={() => navigate('overview')}
             >
-              <span>Overview</span><b>01</b>
+              <span>{t('workspace.overview')}</span><b>01</b>
             </button>
             <button
               className={section === 'decision' ? 'active' : ''}
               type="button"
               onClick={() => navigate('decision')}
             >
-              <span>Decision Twin</span><b>02</b>
+              <span>{t('workspace.decisionTwin')}</span><b>02</b>
             </button>
             <button
               className={section === 'investments' ? 'active' : ''}
               type="button"
               onClick={() => navigate('investments')}
             >
-              <span>Investments</span><b>{holdings.length}</b>
+              <span>{t('workspace.investments')}</span><b>{holdings.length}</b>
             </button>
             <button
               className={section === 'goals' ? 'active' : ''}
               type="button"
               onClick={() => navigate('goals')}
             >
-              <span>Goals</span><b>{goals.length}</b>
+              <span>{t('workspace.goals')}</span><b>{goals.length}</b>
             </button>
 
             <button
@@ -1285,21 +1303,21 @@ if (connectedSources.length > 0) {
               type="button"
               onClick={() => navigate('scenarios')}
             >
-              <span>Scenarios</span><b>04</b>
+              <span>{t('workspace.scenarios')}</span><b>04</b>
             </button>
             <button
               className={section === 'risk' ? 'active' : ''}
               type="button"
               onClick={() => navigate('risk')}
             >
-              <span>Risk</span><b>05</b>
+              <span>{t('workspace.risk')}</span><b>05</b>
             </button>
             <button
               className={section === 'reports' ? 'active' : ''}
               type="button"
               onClick={() => navigate('reports')}
             >
-              <span>Reports</span><b>06</b>
+              <span>{t('workspace.reports')}</span><b>06</b>
             </button>
 
             <button
@@ -1307,14 +1325,22 @@ if (connectedSources.length > 0) {
   type="button"
   onClick={() => navigate('sources')}
 >
-  <span>Data Sources</span>
+  <span>{t('workspace.dataSources')}</span>
   <b>07</b>
 </button>
+            <button
+              className={section === 'mcp-simulator' ? 'active' : ''}
+              type="button"
+              onClick={() => navigate('mcp-simulator')}
+            >
+              <span>MCP Simulator</span>
+              <b>08</b>
+            </button>
           </nav>
 
           <div className="px-sidebar-coming">
-            <span>WORKSPACE MAP</span>
-            <p>Decision Twin rehearses choices before you make them. Scenario Lab remains available for broader what-if testing.</p>
+            <span>{t('workspace.workspaceMap')}</span>
+            <p>{t('workspace.workspaceMapDescription')}</p>
           </div>
         </aside>
 
@@ -1323,37 +1349,37 @@ if (connectedSources.length > 0) {
             <>
               <header className="px-page-heading">
                 <div>
-                  <p>FINANCIAL DIGITAL TWIN</p>
-                  <h1>Your financial picture.</h1>
+                  <p>{t('workspace.overviewEyebrow')}</p>
+                  <h1>{t('workspace.overviewTitle')}</h1>
                   <span>
-                    A focused view of the financial state Portelyx uses for analysis.
+                    {t('workspace.overviewDescription')}
                   </span>
                 </div>
-                <button className="px-dots" type="button" aria-label="Financial twin options">
+                <button className="px-dots" type="button" aria-label={t('workspace.financialTwinOptions')}>
                   ···
                 </button>
               </header>
 
               <section className="px-metrics">
                 <article className="px-metric-primary">
-                  <span>ESTIMATED NET WORTH</span>
+                  <span>{t('workspace.estimatedNetWorth')}</span>
                   <strong>{money(netWorth)}</strong>
-                  <small>Assets minus debts</small>
+                  <small>{t('workspace.assetsMinusDebts')}</small>
                 </article>
                 <article>
-                  <span>MONTHLY SURPLUS</span>
+                  <span>{t('workspace.monthlySurplus')}</span>
                   <strong>{money(surplus)}</strong>
-                  <small>Income minus spending</small>
+                  <small>{t('workspace.incomeMinusSpending')}</small>
                 </article>
                 <article>
-                  <span>AVAILABLE CASH</span>
+                  <span>{t('workspace.availableCash')}</span>
                   <strong>{money(profile.cash.available)}</strong>
-                  <small>Current twin</small>
+                  <small>{t('workspace.currentTwin')}</small>
                 </article>
                 <article>
-                  <span>CASH RUNWAY</span>
-                  <strong>{runwayMonths !== null ? `${runwayMonths} mo` : '—'}</strong>
-                  <small>At current spending</small>
+                  <span>{t('workspace.cashRunway')}</span>
+                  <strong>{runwayMonths !== null ? t('workspace.monthsShort', { count: runwayMonths }) : '—'}</strong>
+                  <small>{t('workspace.atCurrentSpending')}</small>
                 </article>
               </section>
 
@@ -1361,23 +1387,23 @@ if (connectedSources.length > 0) {
                 <article className="px-panel px-flow-panel">
                   <header>
                     <div>
-                      <span>MONTHLY FLOW</span>
-                      <h2>Income and spending</h2>
+                      <span>{t('workspace.monthlyFlow')}</span>
+                      <h2>{t('workspace.incomeAndSpending')}</h2>
                     </div>
-                    <button className="px-dots" type="button" aria-label="Cash flow options">···</button>
+                    <button className="px-dots" type="button" aria-label={t('workspace.cashFlowOptions')}>···</button>
                   </header>
 
-                  <div className="px-bar-chart" aria-label="Monthly cash flow comparison">
+                  <div className="px-bar-chart" aria-label={t('workspace.cashFlowComparison')}>
                     <div className="px-bar-row">
-                      <div><span>Income</span><strong>{money(profile.income.monthly)}</strong></div>
+                      <div><span>{t('workspace.income')}</span><strong>{money(profile.income.monthly)}</strong></div>
                       <div className="px-bar-track"><i style={{ width: `${incomeWidth}%` }} /></div>
                     </div>
                     <div className="px-bar-row">
-                      <div><span>Spending</span><strong>{money(profile.expenses.monthly)}</strong></div>
+                      <div><span>{t('workspace.spending')}</span><strong>{money(profile.expenses.monthly)}</strong></div>
                       <div className="px-bar-track"><i style={{ width: `${expenseWidth}%` }} /></div>
                     </div>
                     <div className="px-bar-row surplus">
-                      <div><span>{surplus >= 0 ? 'Surplus' : 'Deficit'}</span><strong>{money(surplus)}</strong></div>
+                      <div><span>{surplus >= 0 ? t('workspace.surplus') : t('workspace.deficit')}</span><strong>{money(surplus)}</strong></div>
                       <div className="px-bar-track"><i style={{ width: `${surplusWidth}%` }} /></div>
                     </div>
                   </div>
@@ -1386,10 +1412,10 @@ if (connectedSources.length > 0) {
                 <article className="px-panel px-balance-panel">
                   <header>
                     <div>
-                      <span>BALANCE SHEET</span>
-                      <h2>Assets and debt</h2>
+                      <span>{t('workspace.balanceSheet')}</span>
+                      <h2>{t('workspace.assetsAndDebt')}</h2>
                     </div>
-                    <button className="px-dots" type="button" aria-label="Balance sheet options">···</button>
+                    <button className="px-dots" type="button" aria-label={t('workspace.balanceSheetOptions')}>···</button>
                   </header>
 
                   <div className="px-ring-row">
@@ -1399,12 +1425,12 @@ if (connectedSources.length > 0) {
                     >
                       <div>
                         <strong>{Math.round(debtShare)}%</strong>
-                        <span>debt / assets</span>
+                        <span>{t('workspace.debtAssets')}</span>
                       </div>
                     </div>
                     <div className="px-balance-values">
-                      <div><span>Assets</span><strong>{money(profile.assets.total)}</strong></div>
-                      <div><span>Debts</span><strong>{money(profile.debts.total)}</strong></div>
+                      <div><span>{t('workspace.assets')}</span><strong>{money(profile.assets.total)}</strong></div>
+                      <div><span>{t('workspace.debts')}</span><strong>{money(profile.debts.total)}</strong></div>
                     </div>
                   </div>
                 </article>
@@ -1413,16 +1439,16 @@ if (connectedSources.length > 0) {
               <section className="px-twin-summary">
                 <header>
                   <div>
-                    <span>FINANCIAL TWIN COVERAGE</span>
-                    <h2>What Portelyx knows</h2>
+                    <span>{t('workspace.twinCoverage')}</span>
+                    <h2>{t('workspace.whatPortelyxKnows')}</h2>
                   </div>
-                  <button className="px-dots" type="button" aria-label="Twin coverage options">···</button>
+                  <button className="px-dots" type="button" aria-label={t('workspace.twinCoverageOptions')}>···</button>
                 </header>
                 <div className="px-twin-pulse">
-                  <div><strong>{holdings.length}</strong><span>Investments</span></div>
-                  <div><strong>{goals.length}</strong><span>Goals</span></div>
-                  <div><strong>{profile.base_currency}</strong><span>Base currency</span></div>
-                  <div><strong>{runwayMonths !== null ? `${runwayMonths}` : '—'}</strong><span>Runway months</span></div>
+                  <div><strong>{holdings.length}</strong><span>{t('workspace.investments')}</span></div>
+                  <div><strong>{goals.length}</strong><span>{t('workspace.goals')}</span></div>
+                  <div><strong>{profile.base_currency}</strong><span>{t('workspace.baseCurrency')}</span></div>
+                  <div><strong>{runwayMonths !== null ? `${runwayMonths}` : '—'}</strong><span>{t('workspace.runwayMonths')}</span></div>
                 </div>
               </section>
             </>
@@ -1432,35 +1458,32 @@ if (connectedSources.length > 0) {
   <>
     <header className="px-page-heading px-investment-heading">
       <div>
-        <p>INVESTMENTS</p>
-        <h1>Understand what you hold.</h1>
+        <p>{t('workspace.investmentsEyebrow')}</p>
+        <h1>{t('workspace.investmentsTitle')}</h1>
         <span>
-          Portfolio structure and concentration derived from
-          the investments represented in this Financial Twin.
+          {t('workspace.investmentsDescription')}
         </span>
       </div>
 
       <span className="px-investment-status">
         <i />
-        {holdings.length} tracked
+        {t('workspace.trackedCount', { count: holdings.length })}
       </span>
     </header>
 
     {holdings.length === 0 ? (
       <section className="px-investment-empty">
-        <span>NO TRACKED INVESTMENTS</span>
-        <h2>Your portfolio is empty.</h2>
+        <span>{t('workspace.noTrackedInvestments')}</span>
+        <h2>{t('workspace.portfolioEmpty')}</h2>
         <p>
-          Add holdings when you update your Financial Twin.
-          Portelyx will calculate allocation and concentration
-          from the data you provide.
+          {t('workspace.portfolioEmptyDescription')}
         </p>
       </section>
     ) : (
       <>
         <section className="px-investment-summary">
           <article className="px-investment-main-card">
-            <span>TRACKED PORTFOLIO VALUE</span>
+            <span>{t('workspace.trackedPortfolioValue')}</span>
 
             {hasSingleHoldingCurrency &&
             singleHoldingCurrency ? (
@@ -1472,16 +1495,15 @@ if (connectedSources.length > 0) {
                   )}
                 </strong>
                 <small>
-                  Across {holdings.length} tracked holding
+                  Across {t('workspace.trackedCount', { count: holdings.length })} holding
                   {holdings.length === 1 ? '' : 's'}
                 </small>
               </>
             ) : (
               <>
-                <strong>Multi-currency</strong>
+                <strong>{t('workspace.multiCurrency')}</strong>
                 <small>
-                  Totals remain separated until FX conversion
-                  is available.
+                  {t('workspace.multiCurrencyDescription')}
                 </small>
               </>
             )}
@@ -1502,7 +1524,7 @@ if (connectedSources.length > 0) {
           </article>
 
           <article className="px-investment-signal-card">
-            <span>CONCENTRATION</span>
+            <span>{t('workspace.concentration')}</span>
 
             <strong>
               {comparableConcentrationPct !== null
@@ -1512,12 +1534,12 @@ if (connectedSources.length > 0) {
 
             <p>
               {comparableConcentrationPct === null
-                ? 'A single comparable currency is needed to calculate portfolio concentration.'
+                ? t('workspace.concentrationNeedsCurrency')
                 : comparableConcentrationPct <= 35
-                  ? 'Your largest tracked holding is within a lower concentration range.'
+                  ? t('workspace.concentrationLow')
                   : comparableConcentrationPct <= 60
-                    ? 'A meaningful share of the tracked portfolio sits in one holding.'
-                    : 'Most of the comparable tracked portfolio is concentrated in one holding.'}
+                    ? t('workspace.concentrationModerate')
+                    : t('workspace.concentrationHigh')}
             </p>
 
             {comparableConcentrationPct !== null && (
@@ -1535,11 +1557,11 @@ if (connectedSources.length > 0) {
           </article>
 
           <article className="px-investment-meta-card">
-            <span>PORTFOLIO COVERAGE</span>
+            <span>{t('workspace.portfolioCoverage')}</span>
 
             <div>
               <strong>{holdings.length}</strong>
-              <small>Holdings</small>
+              <small>{t('workspace.holdingsLabel')}</small>
             </div>
 
             <div>
@@ -1554,7 +1576,7 @@ if (connectedSources.length > 0) {
 
             <div>
               <strong>{investmentSourceCount}</strong>
-              <small>Connected sources</small>
+              <small>{t('workspace.connectedSourcesLabel')}</small>
             </div>
           </article>
         </section>
@@ -1562,13 +1584,13 @@ if (connectedSources.length > 0) {
         <section className="px-allocation-panel">
           <header>
             <div>
-              <span>PORTFOLIO STRUCTURE</span>
-              <h2>Allocation by holding</h2>
+              <span>{t('workspace.portfolioStructure')}</span>
+              <h2>{t('workspace.allocationByHolding')}</h2>
             </div>
 
             {!hasSingleHoldingCurrency && (
               <small>
-                Shown separately by currency
+                {t('workspace.shownByCurrency')}
               </small>
             )}
           </header>
@@ -1668,8 +1690,8 @@ if (connectedSources.length > 0) {
         <section className="px-investment-holdings">
           <header>
             <div>
-              <span>HOLDINGS</span>
-              <h2>Tracked positions</h2>
+              <span>{t('workspace.holdingsEyebrow')}</span>
+              <h2>{t('workspace.trackedPositions')}</h2>
             </div>
           </header>
 
@@ -1702,7 +1724,7 @@ if (connectedSources.length > 0) {
                     <button
                       className="px-dots"
                       type="button"
-                      aria-label={`${holding.name} options`}
+                      aria-label={t('workspace.holdingOptions', { name: holding.name })}
                     >
                       ···
                     </button>
@@ -1730,14 +1752,14 @@ if (connectedSources.length > 0) {
 
                   <div className="px-investment-position">
                     <div>
-                      <span>Quantity</span>
+                      <span>{t('workspace.quantity')}</span>
                       <strong>
                         {holding.quantity}
                       </strong>
                     </div>
 
                     <div>
-                      <span>Unit price</span>
+                      <span>{t('workspace.unitPrice')}</span>
                       <strong>
                         {money(
                           holding.current_price,
@@ -1748,7 +1770,7 @@ if (connectedSources.length > 0) {
 
                     <div>
                       <span>
-                        {holding.currency} allocation
+                        {t('workspace.currencyAllocation', { currency: holding.currency })}
                       </span>
                       <strong>
                         {allocation.toFixed(1)}%
@@ -1769,64 +1791,64 @@ if (connectedSources.length > 0) {
             <>
               <header className="px-page-heading px-goals-heading">
                 <div>
-                  <p>GOAL INTELLIGENCE</p>
-                  <h1>Know whether your plans are on pace.</h1>
+                  <p>{t('workspace.goalsEyebrow')}</p>
+                  <h1>{t('workspace.goalsTitle')}</h1>
                   <span>
-                    Deterministic projections from the goals represented in this Financial Twin.
+                    {t('workspace.goalsDescription')}
                   </span>
                 </div>
-                <span className="px-goals-method">0% assumed return</span>
+                <span className="px-goals-method">{t('workspace.assumedReturnZero')}</span>
               </header>
 
               {goals.length === 0 ? (
                 <section className="px-goals-empty">
-                  <span>NO TRACKED GOALS</span>
-                  <h2>Give your Financial Twin something to work toward.</h2>
-                  <p>Add any financial target when you update your twin. Portelyx will calculate the pace required without assuming investment growth.</p>
+                  <span>{t('workspace.noTrackedGoals')}</span>
+                  <h2>{t('workspace.goalsEmptyTitle')}</h2>
+                  <p>{t('workspace.goalsEmptyDescription')}</p>
                 </section>
               ) : goalIntelligenceLoading && !goalIntelligence ? (
-                <section className="px-goals-loading">Calculating goal intelligence…</section>
+                <section className="px-goals-loading">{t('workspace.calculatingGoalIntelligence')}</section>
               ) : goalIntelligenceError ? (
                 <section className="px-goals-error">
-                  <strong>Goal Intelligence is temporarily unavailable.</strong>
+                  <strong>{t('workspace.goalIntelligenceUnavailable')}</strong>
                   <span>{goalIntelligenceError}</span>
                 </section>
               ) : (
                 <>
                   <section className="px-goals-summary">
                     <article className="px-goals-summary-primary">
-                      <span>TRACKED OBJECTIVES</span>
+                      <span>{t('workspace.trackedObjectives')}</span>
                       <strong>{goalIntelligence?.goal_count ?? goals.length}</strong>
-                      <small>Calculated from the current Financial Twin</small>
+                      <small>{t('workspace.calculatedFromTwin')}</small>
                     </article>
                     <article>
-                      <span>ON PACE</span>
+                      <span>{t('workspace.onPace')}</span>
                       <strong>
                         {goalIntelligence?.goals.filter(({ intelligence }) =>
                           ['on_track', 'ahead', 'funded', 'already_funded'].includes(intelligence.status) ||
                           ['on_deadline', 'ahead_of_deadline', 'already_funded'].includes(intelligence.deadline_outlook),
                         ).length ?? 0}
                       </strong>
-                      <small>At the current contribution pace</small>
+                      <small>{t('workspace.currentContributionPace')}</small>
                     </article>
                     <article>
-                      <span>NEEDS ATTENTION</span>
+                      <span>{t('workspace.needsAttention')}</span>
                       <strong>
                         {goalIntelligence?.goals.filter(({ intelligence }) =>
                           intelligence.funding_gap > 0 &&
                           !['on_deadline', 'ahead_of_deadline', 'already_funded'].includes(intelligence.deadline_outlook),
                         ).length ?? 0}
                       </strong>
-                      <small>Projected to miss the current target pace</small>
+                      <small>{t('workspace.missCurrentTargetPace')}</small>
                     </article>
                   </section>
 
                   <section className="px-goals-intro">
                     <div>
-                      <span>OBJECTIVE MAP</span>
-                      <h2>Your goals, measured against time.</h2>
+                      <span>{t('workspace.objectiveMap')}</span>
+                      <h2>{t('workspace.goalsMeasuredAgainstTime')}</h2>
                     </div>
-                    <p>Growth assumption: <strong>0%</strong>. Portelyx is showing contribution-based projections, not promised returns.</p>
+                    <p>{t('workspace.growthAssumption')} <strong>0%</strong>. {t('workspace.contributionProjectionNote')}</p>
                   </section>
 
                   <section className="px-goals-grid">
@@ -1835,18 +1857,18 @@ if (connectedSources.length > 0) {
                       const funded = intelligence.remaining_amount <= 0
                       const onPace = funded || ['on_deadline', 'ahead_of_deadline', 'already_funded'].includes(intelligence.deadline_outlook)
                       const statusLabel = funded
-                        ? 'Funded'
+                        ? t('workspace.funded')
                         : intelligence.status === 'deadline_reached'
-                          ? 'Deadline reached'
+                          ? t('workspace.deadlineReached')
                           : onPace
-                            ? 'On pace'
-                            : 'Needs attention'
+                            ? t('workspace.onPaceTitle')
+                            : t('workspace.needsAttentionTitle')
 
                       return (
                         <article className="px-goal-intelligence-card" key={goal.goal_id}>
                           <header>
                             <div>
-                              <span>{goal.category || 'CUSTOM'} · {goal.priority || 'STANDARD'} PRIORITY</span>
+                              <span>{t('workspace.goalMeta', { category: goal.category || 'CUSTOM', priority: goal.priority || 'STANDARD' })}</span>
                               <h2>{goal.name}</h2>
                             </div>
                             <span className={`px-goal-status ${onPace ? 'on-pace' : 'attention'}`}>{statusLabel}</span>
@@ -1854,7 +1876,7 @@ if (connectedSources.length > 0) {
 
                           <div className="px-goal-funding">
                             <div>
-                              <span>CURRENTLY FUNDED</span>
+                              <span>{t('workspace.currentlyFunded')}</span>
                               <strong>{money(goal.current_saved, goal.currency)}</strong>
                               <small>of {money(goal.target_amount, goal.currency)}</small>
                             </div>
@@ -1870,35 +1892,35 @@ if (connectedSources.length > 0) {
 
                           <div className="px-goal-metrics">
                             <div>
-                              <span>Current monthly pace</span>
+                              <span>{t('workspace.currentMonthlyPace')}</span>
                               <strong>{money(goal.monthly_contribution, goal.currency)}</strong>
                             </div>
                             <div>
-                              <span>Required monthly pace</span>
+                              <span>{t('workspace.requiredMonthlyPace')}</span>
                               <strong>{intelligence.required_monthly_contribution === null ? '—' : money(intelligence.required_monthly_contribution, goal.currency)}</strong>
                             </div>
                             <div>
-                              <span>Projected at deadline</span>
+                              <span>{t('workspace.projectedAtDeadline')}</span>
                               <strong>{money(intelligence.projected_amount, goal.currency)}</strong>
                             </div>
                             <div>
-                              <span>{intelligence.projected_surplus > 0 ? 'Projected surplus' : 'Projected shortfall'}</span>
+                              <span>{intelligence.projected_surplus > 0 ? t('workspace.projectedSurplus') : t('workspace.projectedShortfall')}</span>
                               <strong>{money(intelligence.projected_surplus > 0 ? intelligence.projected_surplus : intelligence.funding_gap, goal.currency)}</strong>
                             </div>
                           </div>
 
                           <footer>
                             <div>
-                              <span>TARGET</span>
+                              <span>{t('workspace.target')}</span>
                               <strong>{new Date(`${goal.target_date}T00:00:00`).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</strong>
                             </div>
                             <div>
-                              <span>ESTIMATED COMPLETION</span>
-                              <strong>{intelligence.estimated_completion_date ? new Date(`${intelligence.estimated_completion_date}T00:00:00`).toLocaleDateString(undefined, { year: 'numeric', month: 'short' }) : 'Not reachable at current pace'}</strong>
+                              <span>{t('workspace.estimatedCompletion')}</span>
+                              <strong>{intelligence.estimated_completion_date ? new Date(`${intelligence.estimated_completion_date}T00:00:00`).toLocaleDateString(undefined, { year: 'numeric', month: 'short' }) : t('workspace.notReachableAtCurrentPace')}</strong>
                             </div>
                             <div>
-                              <span>PACE ADJUSTMENT</span>
-                              <strong>{intelligence.additional_monthly_needed === null ? 'Not available' : intelligence.additional_monthly_needed > 0 ? `+${money(intelligence.additional_monthly_needed, goal.currency)} / mo` : 'No increase needed'}</strong>
+                              <span>{t('workspace.paceAdjustment')}</span>
+                              <strong>{intelligence.additional_monthly_needed === null ? t('workspace.notAvailable') : intelligence.additional_monthly_needed > 0 ? `+${money(intelligence.additional_monthly_needed, goal.currency)} / mo` : t('workspace.noIncreaseNeeded')}</strong>
                             </div>
                           </footer>
                         </article>
@@ -1915,23 +1937,23 @@ if (connectedSources.length > 0) {
             <>
               <header className="px-page-heading px-report-heading">
                 <div>
-                  <p>FINANCIAL TWIN CASE FILE</p>
-                  <h1>A record of what Portelyx knows.</h1>
+                  <p>{t('workspace.reportsEyebrow')}</p>
+                  <h1>{t('workspace.reportsTitle')}</h1>
                   <span>
-                    Current twin state, measured risk signals and completed scenario evidence in one reviewable report.
+                    {t('workspace.reportsDescription')}
                   </span>
                 </div>
                 <div className="px-report-actions">
                   <span className="px-report-state">
                     <i />
-                    Current snapshot
+                    {t('workspace.currentSnapshot')}
                   </span>
                   <button
                     className="px-report-download"
                     type="button"
                     onClick={downloadCaseFilePdf}
                   >
-                    Download PDF
+                    {t('workspace.downloadPdf')}
                     <span>↓</span>
                   </button>
                 </div>
@@ -1940,15 +1962,14 @@ if (connectedSources.length > 0) {
               <section className="px-casefile">
                 <div className="px-casefile-top">
                   <div>
-                    <span>PORTELYX / CASE FILE</span>
-                    <h2>Financial Twin Snapshot</h2>
+                    <span>{t('workspace.caseFile')}</span>
+                    <h2>{t('workspace.financialTwinSnapshot')}</h2>
                     <p>
-                      This report reflects the Financial Twin currently loaded in this workspace.
-                      It does not alter the twin and is not financial advice.
+                      {t('workspace.reportDisclaimer')}
                     </p>
                   </div>
                   <div className="px-casefile-stamp">
-                    <span>BASE CURRENCY</span>
+                    <span>{t('workspace.baseCurrency').toUpperCase()}</span>
                     <strong>{profile.base_currency}</strong>
                   </div>
                 </div>
@@ -1959,35 +1980,35 @@ if (connectedSources.length > 0) {
                   <header>
                     <span>01</span>
                     <div>
-                      <strong>Financial position</strong>
-                      <small>Current state of the base twin</small>
+                      <strong>{t('workspace.financialPosition')}</strong>
+                      <small>{t('workspace.currentBaseTwin')}</small>
                     </div>
                   </header>
 
                   <div className="px-report-metrics">
                     <article>
-                      <span>Estimated net worth</span>
+                      <span>{t('workspace.estimatedNetWorthReport')}</span>
                       <strong>{money(netWorth)}</strong>
                     </article>
                     <article>
-                      <span>Available cash</span>
+                      <span>{t('workspace.reportsAvailableCash')}</span>
                       <strong>{money(availableCash)}</strong>
                     </article>
                     <article>
-                      <span>Monthly income</span>
+                      <span>{t('workspace.monthlyIncome')}</span>
                       <strong>{money(monthlyIncome)}</strong>
                     </article>
                     <article>
-                      <span>Monthly expenses</span>
+                      <span>{t('workspace.reportsMonthlyExpenses')}</span>
                       <strong>{money(monthlyExpenses)}</strong>
                     </article>
                     <article>
-                      <span>Monthly surplus</span>
+                      <span>{t('workspace.reportsMonthlySurplus')}</span>
                       <strong>{money(monthlyIncome - monthlyExpenses)}</strong>
                     </article>
                     <article>
-                      <span>Cash runway</span>
-                      <strong>{monthlyExpenses > 0 ? `${expenseCoverage.toFixed(1)} mo` : '—'}</strong>
+                      <span>{t('workspace.reportsCashRunway')}</span>
+                      <strong>{monthlyExpenses > 0 ? t('workspace.monthsShortValue', { count: expenseCoverage.toFixed(1) }) : '—'}</strong>
                     </article>
                   </div>
                 </section>
@@ -1996,24 +2017,24 @@ if (connectedSources.length > 0) {
                   <header>
                     <span>02</span>
                     <div>
-                      <strong>Risk findings</strong>
-                      <small>Portelyx resilience signals derived from this twin</small>
+                      <strong>{t('workspace.riskFindings')}</strong>
+                      <small>{t('workspace.riskFindingsDescription')}</small>
                     </div>
                   </header>
 
                   <div className="px-report-risk">
                     <div className="px-report-risk-summary">
-                      <span>PORTELYX RESILIENCE SIGNAL</span>
+                      <span>{t('workspace.resilienceSignal')}</span>
                       <strong>{resilienceScore ?? '—'}</strong>
-                      <small>{overallRisk === 'Not enough data' ? 'Needs more data' : `${overallRisk} measured risk`}</small>
+                      <small>{overallRisk === 'Not enough data' ? t('workspace.needsMoreData') : t('workspace.measuredRiskValue', { level: riskText(overallRisk) })}</small>
                     </div>
 
                     <div className="px-report-findings">
                       {[
-                        ['Liquidity', liquidityRisk, monthlyExpenses > 0 ? `${expenseCoverage.toFixed(1)} months of cash coverage` : 'Expenses needed'],
-                        ['Cash flow', cashFlowRisk, monthlyIncome > 0 ? `${surplusMargin.toFixed(0)}% surplus margin` : 'Income needed'],
-                        ['Debt exposure', debtRisk, `${money(totalDebt)} tracked debt`],
-                        ['Concentration', concentrationRisk, portfolioValue > 0 ? `${concentrationPct.toFixed(0)}% in largest tracked holding` : 'No tracked portfolio value'],
+                        [t('workspace.liquidity'), liquidityRisk, monthlyExpenses > 0 ? `${expenseCoverage.toFixed(1)} months of cash coverage` : t('workspace.expensesNeeded')],
+                        [t('workspace.cashFlow'), cashFlowRisk, monthlyIncome > 0 ? t('workspace.surplusMarginValue', { value: surplusMargin.toFixed(0) }) : t('workspace.incomeNeeded')],
+                        [t('workspace.debtExposure'), debtRisk, t('workspace.trackedDebtValue', { value: money(totalDebt) })],
+                        [t('workspace.concentration'), concentrationRisk, portfolioValue > 0 ? `${concentrationPct.toFixed(0)}% in largest tracked holding` : t('workspace.noTrackedPortfolioValue')],
                       ].map(([label, level, detail]) => (
                         <div key={label}>
                           <span>{label}</span>
@@ -2029,28 +2050,28 @@ if (connectedSources.length > 0) {
                   <header>
                     <span>03</span>
                     <div>
-                      <strong>Tracked objectives & investments</strong>
-                      <small>Coverage represented in the Financial Twin</small>
+                      <strong>{t('workspace.trackedObjectivesInvestments')}</strong>
+                      <small>{t('workspace.coverageRepresented')}</small>
                     </div>
                   </header>
 
                   <div className="px-report-coverage">
                     <article>
-                      <span>INVESTMENTS</span>
+                      <span>{t('workspace.investments').toUpperCase()}</span>
                       <strong>{holdings.length}</strong>
                       <p>
                         {holdings.length
-                          ? `${money(portfolioValue)} represented across tracked holdings.`
-                          : 'No investment holdings are currently represented.'}
+                          ? t('workspace.investmentCoverageValue', { value: money(portfolioValue) })
+                          : t('workspace.noInvestmentHoldingsRepresented')}
                       </p>
                     </article>
                     <article>
-                      <span>GOALS</span>
+                      <span>{t('workspace.goals').toUpperCase()}</span>
                       <strong>{goals.length}</strong>
                       <p>
                         {goals.length
-                          ? `${atRiskGoals.length} currently flagged as potentially off pace.`
-                          : 'No financial goals are currently represented.'}
+                          ? t('workspace.goalsOffPaceCount', { count: atRiskGoals.length })
+                          : t('workspace.noFinancialGoalsRepresented')}
                       </p>
                     </article>
                   </div>
@@ -2060,46 +2081,46 @@ if (connectedSources.length > 0) {
                   <header>
                     <span>04</span>
                     <div>
-                      <strong>Scenario evidence</strong>
-                      <small>Most recent deterministic income-interruption test</small>
+                      <strong>{t('workspace.scenarioEvidence')}</strong>
+                      <small>{t('workspace.scenarioEvidenceDescription')}</small>
                     </div>
                   </header>
 
                   {jobLossScenario ? (
                     <div className="px-report-scenario">
                       <div>
-                        <span>TEST</span>
-                        <strong>{jobLossScenario.months_without_income} months without income</strong>
+                        <span>{t('workspace.test')}</span>
+                        <strong>{t('workspace.monthsWithoutIncomeValue', { count: jobLossScenario.months_without_income })}</strong>
                       </div>
                       <div>
-                        <span>STARTING CASH</span>
+                        <span>{t('workspace.startingCash')}</span>
                         <strong>{money(jobLossScenario.starting_cash)}</strong>
                       </div>
                       <div>
-                        <span>CASH AFTER PERIOD</span>
+                        <span>{t('workspace.cashAfterPeriod')}</span>
                         <strong>{money(jobLossScenario.cash_after_period)}</strong>
                       </div>
                       <div>
-                        <span>FUNDING GAP</span>
+                        <span>{t('workspace.fundingGap')}</span>
                         <strong>{money(jobLossScenario.funding_gap)}</strong>
                       </div>
                       <div>
-                        <span>CASH COVERAGE</span>
-                        <strong>{jobLossScenario.months_cash_can_cover.toFixed(1)} months</strong>
+                        <span>{t('workspace.cashCoverage')}</span>
+                        <strong>{t('workspace.monthsValue', { count: jobLossScenario.months_cash_can_cover.toFixed(1) })}</strong>
                       </div>
                       <div>
-                        <span>BASE TWIN</span>
-                        <strong>Unchanged</strong>
+                        <span>{t('workspace.baseTwin').toUpperCase()}</span>
+                        <strong>{t('workspace.unchanged')}</strong>
                       </div>
                     </div>
                   ) : (
                     <div className="px-report-empty">
                       <div>
-                        <strong>No scenario evidence yet.</strong>
-                        <span>Run a deterministic scenario and it will appear in this case file during the current session.</span>
+                        <strong>{t('workspace.noScenarioEvidence')}</strong>
+                        <span>{t('workspace.noScenarioEvidenceDescription')}</span>
                       </div>
                       <button type="button" onClick={() => navigate('scenarios')}>
-                        Open Scenario Lab <b>→</b>
+                        {t('workspace.openScenarioLab')} <b>→</b>
                       </button>
                     </div>
                   )}
@@ -2108,23 +2129,24 @@ if (connectedSources.length > 0) {
                 <footer className="px-casefile-footer">
                   <div>
                     <span>PORTELYX</span>
-                    <p>Financial Intelligence, Explained.</p>
+                    <p>{t('workspace.financialIntelligenceExplained')}</p>
                   </div>
                   <div>
-                    <strong>Snapshot only</strong>
-                    <span>Generated from the Financial Twin currently loaded in this workspace.</span>
+                    <strong>{t('workspace.snapshotOnly')}</strong>
+                    <span>{t('workspace.snapshotDescription')}</span>
                   </div>
                 </footer>
               </section>
             </>
           )}
 
+          {section === 'mcp-simulator' && <McpSimulator />}
           {section === 'sources' && (
   <>
     <header className="px-page-heading">
       <div>
-        <p>DATA SOURCES & PROVENANCE</p>
-        <h1>Know where your twin came from.</h1>
+        <p>{t('workspace.dataSourcesEyebrow')}</p>
+        <h1>{t('workspace.dataSourcesTitle')}</h1>
         <span>
           Evidence retained from the financial data used to build this Financial Twin.
         </span>
@@ -2139,8 +2161,8 @@ if (connectedSources.length > 0) {
 
     {connectedSources.length === 0 ? (
       <section className="px-source-empty">
-        <span>NO CONNECTED DATA SOURCE</span>
-        <h2>This twin has no connected-account evidence.</h2>
+        <span>{t('workspace.noConnectedSource')}</span>
+        <h2>{t('workspace.noConnectedSourceTitle')}</h2>
         <p>
           Financial values may have been entered manually or imported from another
           source. Connected-account provenance will appear here when available.
@@ -2150,8 +2172,8 @@ if (connectedSources.length > 0) {
       <>
         <section className="px-source-hero">
           <div>
-            <span>CONNECTED ACCOUNT SOURCE</span>
-            <h2>{connectedProvider ?? 'Financial provider'}</h2>
+            <span>{t('workspace.connectedAccountSource')}</span>
+            <h2>{connectedProvider ?? t('workspace.financialProvider')}</h2>
             <p>
               {connectedAccounts.length} account
               {connectedAccounts.length === 1 ? '' : 's'} contributed evidence to
@@ -2161,19 +2183,19 @@ if (connectedSources.length > 0) {
 
           <div className="px-source-facts">
             <div>
-              <span>ENVIRONMENT</span>
+              <span>{t('workspace.environment')}</span>
               <strong>
-                {connectedEnvironment?.toUpperCase() ?? 'Not supplied'}
+                {connectedEnvironment?.toUpperCase() ?? t('workspace.notSupplied')}
               </strong>
             </div>
 
             <div>
-              <span>BASE CURRENCY</span>
+              <span>{t('workspace.baseCurrency').toUpperCase()}</span>
               <strong>{profile.base_currency}</strong>
             </div>
 
             <div>
-              <span>INGESTED BY PORTELYX</span>
+              <span>{t('workspace.ingestedByPortelyx')}</span>
               <strong>{formatTimestamp(connectedIngestedAt)}</strong>
             </div>
           </div>
@@ -2181,7 +2203,7 @@ if (connectedSources.length > 0) {
 
         {connectedEnvironment?.toLowerCase() === 'sandbox' && (
           <div className="px-source-notice">
-            <strong>Sandbox data</strong>
+            <strong>{t('workspace.sandboxData')}</strong>
             <span>
               These are provider sandbox values used for testing and demonstration.
               They are not presented as live banking data.
@@ -2199,29 +2221,29 @@ if (connectedSources.length > 0) {
             return (
               <article
                 className="px-source-account"
-                key={`${account.provider_account_id ?? account.name ?? 'account'}-${index}`}
+                key={`${account.provider_account_id ?? account.name ?? t('workspace.account')}-${index}`}
               >
                 <header>
                   <div>
                     <span>
-                      {account.category?.toUpperCase() || 'ACCOUNT'}
+                      {account.category?.toUpperCase() || t('workspace.account')}
                     </span>
 
                     <h2>
                       {account.provider_account_name ||
                         account.name ||
-                        'Connected account'}
+                        t('workspace.connectedAccount')}
                     </h2>
 
                     <small>
                       {[account.account_type, account.container]
                         .filter(Boolean)
-                        .join(' · ') || 'Provider account'}
+                        .join(' · ') || t('workspace.providerAccount')}
                     </small>
                   </div>
 
                   <div className="px-source-balance">
-                    <span>PROVIDER-REPORTED BALANCE</span>
+                    <span>{t('workspace.providerReportedBalance')}</span>
                     <strong>
                       {money(
                         Number(account.balance ?? 0),
@@ -2233,22 +2255,22 @@ if (connectedSources.length > 0) {
 
                 <div className="px-source-details">
                   <div>
-                    <span>Provider</span>
+                    <span>{t('workspace.provider')}</span>
                     <strong>{account.provider}</strong>
                   </div>
 
                   <div>
-                    <span>Environment</span>
+                    <span>{t('workspace.environment')}</span>
                     <strong>{account.environment}</strong>
                   </div>
 
                   <div>
-                    <span>Currency</span>
+                    <span>{t('workspace.currency')}</span>
                     <strong>{account.currency ?? 'Not supplied'}</strong>
                   </div>
 
                   <div>
-                    <span>Balance source</span>
+                    <span>{t('workspace.balanceSource')}</span>
                     <strong>
                       {account.provenance?.balance_source_field ??
                         'Not supplied'}
@@ -2256,7 +2278,7 @@ if (connectedSources.length > 0) {
                   </div>
 
                   <div>
-                    <span>Provider refresh</span>
+                    <span>{t('workspace.providerRefresh')}</span>
                     <strong>
                       {providerRefresh
                         ? String(providerRefresh)
@@ -2265,7 +2287,7 @@ if (connectedSources.length > 0) {
                   </div>
 
                   <div>
-                    <span>Portelyx ingestion</span>
+                    <span>{t('workspace.portelyxIngestion')}</span>
                     <strong>
                       {formatTimestamp(
                         account.provenance?.ingested_at,
@@ -2281,7 +2303,7 @@ if (connectedSources.length > 0) {
         <footer className="px-source-proof">
           <span>✓</span>
           <div>
-            <strong>Source evidence preserved</strong>
+            <strong>{t('workspace.sourceEvidencePreserved')}</strong>
             <p>
               Portelyx keeps provider provenance separate from the Financial
               Twin values derived from it.
@@ -2297,14 +2319,14 @@ if (connectedSources.length > 0) {
             <>
               <header className="px-page-heading px-risk-heading">
                 <div>
-                  <p>RISK INTELLIGENCE</p>
-                  <h1>See where your twin is exposed.</h1>
+                  <p>{t('workspace.riskEyebrow')}</p>
+                  <h1>{t('workspace.riskTitle')}</h1>
                   <span>
                     Risk signals are derived from your current Financial Twin — not a credit score or investment recommendation.
                   </span>
                 </div>
                 <span className={`px-risk-badge ${overallRisk.toLowerCase().replaceAll(' ', '-')}`}>
-                  {overallRisk === 'Not enough data' ? 'Needs data' : `${overallRisk} risk`}
+                  {overallRisk === 'Not enough data' ? t('workspace.needsData') : t('workspace.riskValue', { level: riskText(overallRisk) })}
                 </span>
               </header>
 
@@ -2312,10 +2334,10 @@ if (connectedSources.length > 0) {
                 <article className="px-resilience-card">
                   <div className="px-risk-card-head">
                     <div>
-                      <span>FINANCIAL RESILIENCE</span>
-                      <h2>Your current buffer against change.</h2>
+                      <span>{t('workspace.financialResilience')}</span>
+                      <h2>{t('workspace.currentBuffer')}</h2>
                     </div>
-                    <button className="px-dots" type="button" aria-label="Risk options">···</button>
+                    <button className="px-dots" type="button" aria-label={t('workspace.riskOptions')}>···</button>
                   </div>
 
                   <div className="px-resilience-body">
@@ -2332,8 +2354,8 @@ if (connectedSources.length > 0) {
                     </div>
 
                     <div className="px-resilience-copy">
-                      <span>CURRENT SIGNAL</span>
-                      <strong>{overallRisk}</strong>
+                      <span>{t('workspace.currentSignal')}</span>
+                      <strong>{riskText(overallRisk)}</strong>
                       <p>
                         {resilienceScore === null
                           ? 'Add more financial data to calculate a resilience signal.'
@@ -2348,14 +2370,14 @@ if (connectedSources.length > 0) {
                 </article>
 
                 <article className="px-risk-driver-card">
-                  <span>WHAT IS DRIVING RISK?</span>
-                  <h2>Four signals, one twin.</h2>
+                  <span>{t('workspace.whatDrivesRisk')}</span>
+                  <h2>{t('workspace.fourSignals')}</h2>
                   <div className="px-risk-driver-list">
                     {[
-                      ['Liquidity', liquidityRisk],
-                      ['Cash flow', cashFlowRisk],
-                      ['Debt exposure', debtRisk],
-                      ['Concentration', concentrationRisk],
+                      [t('workspace.liquidity'), liquidityRisk],
+                      [t('workspace.cashFlow'), cashFlowRisk],
+                      [t('workspace.debtExposure'), debtRisk],
+                      [t('workspace.concentration'), concentrationRisk],
                     ].map(([label, level]) => (
                       <div key={label}>
                         <span>{label}</span>
@@ -2369,24 +2391,24 @@ if (connectedSources.length > 0) {
               <section className="px-risk-map">
                 <article>
                   <header>
-                    <span>LIQUIDITY</span>
-                    <strong className={liquidityRisk.toLowerCase().replaceAll(' ', '-')}>{liquidityRisk}</strong>
+                    <span>{t('workspace.liquidityUpper')}</span>
+                    <strong className={liquidityRisk.toLowerCase().replaceAll(' ', '-')}>{riskText(liquidityRisk)}</strong>
                   </header>
-                  <h3>{monthlyExpenses > 0 ? `${expenseCoverage.toFixed(1)} months` : '—'}</h3>
-                  <p>Current cash divided by monthly expenses.</p>
+                  <h3>{monthlyExpenses > 0 ? t('workspace.monthsValue', { count: expenseCoverage.toFixed(1) }) : '—'}</h3>
+                  <p>{t('workspace.liquidityDescription')}</p>
                   <div className="px-risk-scale">
                     <i style={{ width: `${Math.min(100, (expenseCoverage / 6) * 100)}%` }} />
                   </div>
-                  <small>6 months = stronger buffer</small>
+                  <small>{t('workspace.liquidityBenchmark')}</small>
                 </article>
 
                 <article>
                   <header>
-                    <span>CASH FLOW</span>
-                    <strong className={cashFlowRisk.toLowerCase().replaceAll(' ', '-')}>{cashFlowRisk}</strong>
+                    <span>{t('workspace.cashFlowUpper')}</span>
+                    <strong className={cashFlowRisk.toLowerCase().replaceAll(' ', '-')}>{riskText(cashFlowRisk)}</strong>
                   </header>
                   <h3>{monthlyIncome > 0 ? `${surplusMargin.toFixed(0)}%` : '—'}</h3>
-                  <p>Share of monthly income remaining after expenses.</p>
+                  <p>{t('workspace.cashFlowDescription')}</p>
                   <div className="px-risk-scale">
                     <i style={{ width: `${Math.min(100, Math.max(0, surplusMargin * 3))}%` }} />
                   </div>
@@ -2395,11 +2417,11 @@ if (connectedSources.length > 0) {
 
                 <article>
                   <header>
-                    <span>DEBT EXPOSURE</span>
-                    <strong className={debtRisk.toLowerCase().replaceAll(' ', '-')}>{debtRisk}</strong>
+                    <span>{t('workspace.debtExposureUpper')}</span>
+                    <strong className={debtRisk.toLowerCase().replaceAll(' ', '-')}>{riskText(debtRisk)}</strong>
                   </header>
                   <h3>{totalAssets > 0 ? `${debtToAssets.toFixed(0)}%` : totalDebt > 0 ? '100%+' : '0%'}</h3>
-                  <p>Debt relative to the assets represented in your twin.</p>
+                  <p>{t('workspace.debtExposureDescription')}</p>
                   <div className="px-risk-scale inverse">
                     <i style={{ width: `${Math.min(100, debtToAssets)}%` }} />
                   </div>
@@ -2408,22 +2430,22 @@ if (connectedSources.length > 0) {
 
                 <article>
                   <header>
-                    <span>PORTFOLIO CONCENTRATION</span>
-                    <strong className={concentrationRisk.toLowerCase().replaceAll(' ', '-')}>{concentrationRisk}</strong>
+                    <span>{t('workspace.portfolioConcentration')}</span>
+                    <strong className={concentrationRisk.toLowerCase().replaceAll(' ', '-')}>{riskText(concentrationRisk)}</strong>
                   </header>
                   <h3>{portfolioValue > 0 ? `${concentrationPct.toFixed(0)}%` : '—'}</h3>
-                  <p>Share of tracked portfolio value in the largest holding.</p>
+                  <p>{t('workspace.portfolioConcentrationDescription')}</p>
                   <div className="px-risk-scale inverse">
                     <i style={{ width: `${Math.min(100, concentrationPct)}%` }} />
                   </div>
-                  <small>{holdings.length} tracked holding{holdings.length === 1 ? '' : 's'}</small>
+                  <small>{t('workspace.trackedCount', { count: holdings.length })} holding{holdings.length === 1 ? '' : 's'}</small>
                 </article>
               </section>
 
               <section className="px-risk-bottom">
                 <article className="px-goal-risk-card">
                   <div>
-                    <span>GOAL VULNERABILITY</span>
+                    <span>{t('workspace.goalVulnerability')}</span>
                     <h2>
                       {goals.length === 0
                         ? 'No goals to evaluate yet.'
@@ -2439,13 +2461,13 @@ if (connectedSources.length > 0) {
                 </article>
 
                 <article className="px-stress-card">
-                  <span>STRESS TEST</span>
-                  <h2>Risk becomes more useful under change.</h2>
+                  <span>{t('workspace.stressTest')}</span>
+                  <h2>{t('workspace.stressTestTitle')}</h2>
                   <p>
                     Use Scenario Lab to test how income interruptions and other simulated changes affect your financial position.
                   </p>
                   <button type="button" onClick={() => navigate('scenarios')}>
-                    Open Scenario Lab <b>→</b>
+                    {t('workspace.openScenarioLab')} <b>→</b>
                   </button>
                 </article>
               </section>
@@ -2460,8 +2482,8 @@ if (connectedSources.length > 0) {
             <>
               <header className="px-page-heading px-scenario-heading">
                 <div>
-                  <p>SCENARIO LAB</p>
-                  <h1>Test a different future.</h1>
+                  <p>{t('workspace.scenariosEyebrow')}</p>
+                  <h1>{t('workspace.scenarioTitle')}</h1>
                   <span>
                     Change assumptions without changing your base Financial Twin.
                   </span>
@@ -2474,8 +2496,8 @@ if (connectedSources.length > 0) {
 
               <section className="px-scenario-composer">
                 <div className="px-scenario-composer-copy">
-                  <span>ASK PORTELYX TO SIMULATE</span>
-                  <h2>Describe the change you want to test.</h2>
+                  <span>{t('workspace.askToSimulate')}</span>
+                  <h2>{t('workspace.describeChange')}</h2>
                   <p>
                     Natural-language scenarios use the same Financial Twin shown
                     across your workspace.
@@ -2498,7 +2520,7 @@ if (connectedSources.length > 0) {
                     type="submit"
                     disabled={scenarioLoading || !question.trim()}
                   >
-                    {scenarioLoading ? 'Running…' : 'Run'}
+                    {scenarioLoading ? t('workspace.running') : t('workspace.run')}
                     <span>→</span>
                   </button>
                 </form>
@@ -2508,10 +2530,10 @@ if (connectedSources.length > 0) {
                 <article className="px-scenario-tool">
                   <header>
                     <div>
-                      <span>INCOME INTERRUPTION</span>
-                      <h2>What if income stops?</h2>
+                      <span>{t('workspace.incomeInterruption')}</span>
+                      <h2>{t('workspace.incomeStops')}</h2>
                     </div>
-                    <span className="px-tool-live">LIVE</span>
+                    <span className="px-tool-live">{t('workspace.live')}</span>
                   </header>
 
                   <p>
@@ -2521,7 +2543,7 @@ if (connectedSources.length > 0) {
 
                   <div className="px-tool-control">
                     <label>
-                      <span>Months without income</span>
+                      <span>{t('workspace.monthsWithoutIncome')}</span>
                       <input
                         type="number"
                         min="1"
@@ -2543,28 +2565,28 @@ if (connectedSources.length > 0) {
                       }
                       onClick={onRunJobLossScenario}
                     >
-                      {scenarioLoading ? 'Simulating…' : 'Simulate'}
+                      {scenarioLoading ? t('workspace.simulating') : t('workspace.simulate')}
                       <span>→</span>
                     </button>
                   </div>
                 </article>
 
                 <article className="px-scenario-info">
-                  <span>HOW IT WORKS</span>
-                  <h2>A branch, not a rewrite.</h2>
+                  <span>{t('workspace.howItWorks')}</span>
+                  <h2>{t('workspace.branchNotRewrite')}</h2>
                   <p>
                     Portelyx creates a simulated state from your current twin,
                     applies the scenario, and keeps the original state intact.
                   </p>
                   <div className="px-branch-visual">
                     <div>
-                      <strong>Base Twin</strong>
+                      <strong>{t('workspace.baseTwin')}</strong>
                       <span>{money(netWorth)}</span>
                     </div>
                     <i>→</i>
                     <div>
-                      <strong>Scenario Twin</strong>
-                      <span>{jobLossScenario ? 'Calculated' : 'Waiting'}</span>
+                      <strong>{t('workspace.scenarioTwin')}</strong>
+                      <span>{jobLossScenario ? t('workspace.calculated') : t('workspace.waiting')}</span>
                     </div>
                   </div>
                 </article>
@@ -2574,8 +2596,8 @@ if (connectedSources.length > 0) {
                 <section className="px-scenario-result-card">
                   <header>
                     <div>
-                      <span>SCENARIO IMPACT</span>
-                      <h2>{jobLossScenario.months_without_income} months without income</h2>
+                      <span>{t('workspace.scenarioImpact')}</span>
+                      <h2>{t('workspace.monthsWithoutIncomeValue', { count: jobLossScenario.months_without_income })}</h2>
                     </div>
                     <span
                       className={`px-result-status ${
@@ -2583,16 +2605,16 @@ if (connectedSources.length > 0) {
                       }`}
                     >
                       {jobLossScenario.funding_gap > 0
-                        ? 'Funding gap'
-                        : 'Cash covers period'}
+                        ? t('workspace.fundingGap')
+                        : t('workspace.cashCoversPeriod')}
                     </span>
                   </header>
 
                   <div className="px-compare-grid">
                     <article>
-                      <span>BASE TWIN</span>
+                      <span>{t('workspace.baseTwin').toUpperCase()}</span>
                       <strong>{money(jobLossScenario.starting_cash)}</strong>
-                      <small>Available cash</small>
+                      <small>{t('workspace.availableCash')}</small>
                     </article>
                     <div className="px-compare-arrow">
                       <span>→</span>
@@ -2604,15 +2626,15 @@ if (connectedSources.length > 0) {
                       </small>
                     </div>
                     <article className="simulated">
-                      <span>SCENARIO TWIN</span>
+                      <span>{t('workspace.scenarioTwin').toUpperCase()}</span>
                       <strong>{money(jobLossScenario.cash_after_period)}</strong>
-                      <small>Cash after period</small>
+                      <small>{t('workspace.cashAfterPeriod')}</small>
                     </article>
                   </div>
 
                   <div className="px-impact-bars">
                     <div>
-                      <span>Expenses during period</span>
+                      <span>{t('workspace.expensesDuringPeriod')}</span>
                       <strong>{money(jobLossScenario.expenses_during_period)}</strong>
                       <div className="px-impact-track">
                         <i
@@ -2628,7 +2650,7 @@ if (connectedSources.length > 0) {
                     </div>
 
                     <div>
-                      <span>Lost income</span>
+                      <span>{t('workspace.lostIncome')}</span>
                       <strong>{money(jobLossScenario.lost_income)}</strong>
                       <div className="px-impact-track neutral">
                         <i
@@ -2642,7 +2664,7 @@ if (connectedSources.length > 0) {
                     </div>
 
                     <div>
-                      <span>Funding gap</span>
+                      <span>{t('workspace.fundingGap')}</span>
                       <strong>{money(jobLossScenario.funding_gap)}</strong>
                       <div className="px-impact-track risk">
                         <i
@@ -2671,20 +2693,20 @@ if (connectedSources.length > 0) {
 
                   <footer className="px-scenario-result-footer">
                     <div>
-                      <span>Cash coverage</span>
+                      <span>{t('workspace.cashCoverage')}</span>
                       <strong>
-                        {jobLossScenario.months_cash_can_cover.toFixed(1)} months
+                        {t('workspace.monthsValue', { count: jobLossScenario.months_cash_can_cover.toFixed(1) })}
                       </strong>
                     </div>
                     <div>
-                      <span>Scenario duration</span>
+                      <span>{t('workspace.scenarioDuration')}</span>
                       <strong>
                         {jobLossScenario.months_without_income} months
                       </strong>
                     </div>
                     <div>
-                      <span>Base Twin</span>
-                      <strong>Unchanged</strong>
+                      <span>{t('workspace.baseTwin')}</span>
+                      <strong>{t('workspace.unchanged')}</strong>
                     </div>
                   </footer>
                 </section>
@@ -2697,10 +2719,10 @@ if (connectedSources.length > 0) {
           className={`px-ai-tab ${aiOpen ? 'hidden' : ''}`}
           type="button"
           onClick={() => setAiOpen(true)}
-          aria-label="Ask Portelyx AI"
+          aria-label={t('workspace.askPortelyxAI')}
         >
           <span>P</span>
-          <strong>Ask Portelyx AI</strong>
+          <strong>{t('workspace.askPortelyxAI')}</strong>
         </button>
 
         <aside className={`px-ai-drawer ${aiOpen ? 'open' : ''}`}>
@@ -2708,12 +2730,12 @@ if (connectedSources.length > 0) {
             <header>
               <div className="px-ai-mark">P</div>
               <div>
-                <strong>Portelyx AI</strong>
-                <span>Financial twin companion</span>
+                <strong>{t('workspace.portelyxAI')}</strong>
+                <span>{t('workspace.aiCompanion')}</span>
               </div>
               <button
                 type="button"
-                aria-label="Close Portelyx AI"
+                aria-label={t('workspace.closePortelyxAI')}
                 onClick={() => setAiOpen(false)}
               >
                 ×
@@ -2721,7 +2743,7 @@ if (connectedSources.length > 0) {
             </header>
 
             <div className="px-ai-prompt">
-              <span>ASK ABOUT THIS TWIN</span>
+              <span>{t('workspace.askAboutTwin')}</span>
               <p>
                 Explore a change, investigate risk, or ask what is driving
                 your financial position.
@@ -2735,7 +2757,7 @@ if (connectedSources.length > 0) {
                     className={`px-ai-result ${message.role === 'user' ? 'px-ai-user-message' : ''}`}
                     key={`${message.role}-${index}`}
                   >
-                    <span>{message.role === 'user' ? 'YOU' : 'PORTELYX AI'}</span>
+                    <span>{message.role === 'user' ? t('workspace.you') : t('workspace.portelyxAI')}</span>
                     <p>{message.content}</p>
                   </div>
                 ))}
@@ -2759,31 +2781,31 @@ if (connectedSources.length > 0) {
                 type="submit"
                 disabled={aiChatLoading || !aiInput.trim()}
               >
-                {aiChatLoading ? 'Thinking…' : 'Ask'}
+                {aiChatLoading ? t('workspace.thinking') : t('workspace.ask')}
                 <span>→</span>
               </button>
             </form>
 
             {aiChatLoading && (
               <div className="px-ai-result">
-                <span>PORTELYX AI</span>
-                <strong>Working with your Financial Twin…</strong>
+                <span>{t('workspace.portelyxAI')}</span>
+                <strong>{t('workspace.aiWorking')}</strong>
               </div>
             )}
 
             {aiChatError && (
               <div className="px-ai-result px-ai-result-error">
-                <span>PORTELYX AI</span>
-                <strong>Unable to complete that request.</strong>
+                <span>{t('workspace.portelyxAI')}</span>
+                <strong>{t('workspace.aiUnable')}</strong>
                 <p>{aiChatError}</p>
               </div>
             )}
 
             {aiEngineResults && (
               <div className="px-ai-tools">
-                <span>DETERMINISTIC ENGINE</span>
+                <span>{t('workspace.deterministicEngine')}</span>
                 <div>
-                  <b>Decision Twin verified</b>
+                  <b>{t('workspace.decisionTwinVerified')}</b>
                 </div>
               </div>
             )}
@@ -2795,7 +2817,7 @@ if (connectedSources.length > 0) {
         </aside>
       </div>
 
-      {menuOpen && <button className="px-scrim" type="button" aria-label="Close navigation" onClick={() => setMenuOpen(false)} />}
+      {menuOpen && <button className="px-scrim" type="button" aria-label={t('workspace.closeNavigation')} onClick={() => setMenuOpen(false)} />}
     </main>
   )
 }

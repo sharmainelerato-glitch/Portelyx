@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="PORTELYX Contact and Support" />
+  <title>Contact & Support | PORTELYX</title>
+
+  <style>
+    :root {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      color: #f5f7ff;
+      background: #060810;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(42, 99, 255, 0.12), transparent 30%),
+        radial-gradient(circle at 88% 18%, rgba(124, 58, 237, 0.1), transparent 28%),
+        #060810;
+      color: #f5f7ff;
+      line-height: 1.7;
+    }
+
+    .page {
+      width: min(900px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 54px 0 80px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 64px;
+    }
+
+    .logo {
+      height: 38px;
+      max-width: 210px;
+      object-fit: contain;
+    }
+
+    .back {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: #f5f7ff;
+      border-radius: 12px;
+      padding: 9px 14px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .back:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: #77a7ff;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: clamp(40px, 7vw, 64px);
+      line-height: 1;
+      letter-spacing: -0.045em;
+    }
+
+    .intro {
+      max-width: 760px;
+      margin: 18px 0 44px;
+      color: rgba(235, 240, 255, 0.7);
+      font-size: 17px;
+    }
+
+    .card {
+      padding: 30px;
+      margin: 18px 0;
+      border: 1px solid rgba(255, 255, 255, 0.085);
+      border-radius: 20px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.022)
+        );
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .card p {
+      margin: 0;
+      color: rgba(220, 227, 245, 0.62);
+    }
+
+    .card p + p {
+      margin-top: 12px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 18px;
+      padding: 7px 11px;
+      border: 1px solid rgba(119, 167, 255, 0.18);
+      border-radius: 999px;
+      background: rgba(119, 167, 255, 0.06);
+      color: #a9c6ff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #77a7ff;
+      box-shadow: 0 0 12px rgba(119, 167, 255, 0.7);
+    }
+
+    .notice {
+      padding: 20px;
+      margin: 30px 0;
+      border: 1px solid rgba(119, 167, 255, 0.2);
+      border-radius: 14px;
+      background: rgba(119, 167, 255, 0.06);
+      color: #cbd9ff;
+      font-size: 14px;
+    }
+
+    .legal-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 50px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .legal-nav a {
+      color: rgba(220, 227, 245, 0.58);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .legal-nav a:hover {
+      color: #ffffff;
+    }
+
+    footer {
+      margin-top: 30px;
+      color: rgba(220, 227, 245, 0.38);
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      .page {
+        width: min(100% - 28px, 900px);
+        padding-top: 30px;
+      }
+
+      .topbar {
+        margin-bottom: 46px;
+      }
+
+      .logo {
+        height: 30px;
+        max-width: 150px;
+      }
+
+      .card {
+        padding: 22px 18px;
+        border-radius: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="topbar">
+      <img
+        class="logo"
+        src="/portelyx-logo.png"
+        alt="PORTELYX"
+      />
+
+      <a class="back" href="/">← PORTELYX</a>
+    </div>
+
+    <p class="eyebrow">Help & Support</p>
+    <h1>Contact PORTELYX</h1>
+
+    <p class="intro">
+      Need help with PORTELYX, have a privacy question, or want to report
+      something that is not working correctly? This page explains the
+      available support options while PORTELYX is under active development.
+    </p>
+
+    <section class="card">
+      <h2>Product support</h2>
+
+      <p>
+        PORTELYX is currently under active development. A dedicated public
+        support email address is being prepared and will be published here
+        when available.
+      </p>
+
+      <div class="status">
+        <span class="dot"></span>
+        Dedicated support channel coming soon
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Privacy requests</h2>
+
+      <p>
+        Requests relating to personal information, access, correction,
+        deletion or other privacy matters can be submitted through the
+        official PORTELYX contact channel once published.
+      </p>
+
+      <p>
+        PORTELYX will not ask you to send passwords, authentication codes or
+        other account credentials as part of a privacy request.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Technical problems</h2>
+
+      <p>
+        If you experience a technical problem, useful information to include
+        in a future support request may include what you were trying to do,
+        what happened instead, and the device or browser you were using.
+      </p>
+
+      <p>
+        Do not include passwords, authentication tokens, banking credentials
+        or unnecessary financial information in a support message.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Financial questions</h2>
+
+      <p>
+        PORTELYX support can help with questions about how the platform works,
+        but PORTELYX does not provide individual financial, investment, tax,
+        accounting or legal advice.
+      </p>
+
+      <p>
+        For advice specific to your personal circumstances, consider speaking
+        with an appropriately qualified professional.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Security concerns</h2>
+
+      <p>
+        If you believe you have found a security or privacy issue affecting
+        PORTELYX, please avoid publicly posting sensitive details. A dedicated
+        reporting contact will be added as PORTELYX's public support
+        infrastructure is established.
+      </p>
+    </section>
+
+    <div class="notice">
+      <strong>Never share your password.</strong>
+      PORTELYX support should never need your password, one-time verification
+      code, authentication token or online banking password to assist you.
+    </div>
+
+    <nav class="legal-nav">
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms of Use</a>
+      <a href="/financial-disclaimer.html">Financial Disclaimer</a>
+      <a href="/contact.html">Contact & Support</a>
+    </nav>
+
+    <footer>
+      © 2026 PORTELYX. Financial Decision Twin.
+    </footer>
+  </main>
+</body>
+</html>

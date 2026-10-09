@@ -4,6 +4,7 @@ import './ConnectDataHub.css'
 import './StatementReview.css'
 import './ConnectedAccountReview.css'
 import { apiUrl } from './api'
+import { usePortelyxLanguage } from './i18n'
 
 type ConnectionKind = 'bank' | 'investment' | 'other'
 type ConnectMode = 'choose' | 'accounts' | 'statement' | 'account-review'
@@ -201,6 +202,7 @@ export default function ConnectAccounts({
   onContinueStatement,
   onContinueConnected,
 }: Props) {
+  const { t } = usePortelyxLanguage()
   const [mode, setMode] = useState<ConnectMode>('choose')
   const [search, setSearch] = useState('')
   const [selectedProvider, setSelectedProvider] =
@@ -418,68 +420,52 @@ export default function ConnectAccounts({
         <nav className="connect-nav">
           <div className="logo">PORTELYX</div>
           <button className="nav-button" type="button" onClick={onBack}>
-            ← Back
+            ← {t('connectAccounts.back')}
           </button>
         </nav>
 
         <section className="connect-hub-shell">
           <header className="connect-hub-heading">
-            <p className="connect-eyebrow">BUILD YOUR FINANCIAL TWIN</p>
-            <h1>Bring your financial world into one twin.</h1>
-            <p>
-              Connect supported accounts, upload a statement, or enter your
-              finances manually. Portelyx normalizes each route into the same
-              Financial Twin.
-            </p>
+            <p className="connect-eyebrow">{t('connectAccounts.hubEyebrow')}</p>
+            <h1>{t('connectAccounts.hubTitle')}</h1>
+            <p>{t('connectAccounts.hubDescription')}</p>
           </header>
 
           <section className="connect-method-grid">
             <button type="button" onClick={() => setMode('accounts')}>
               <span className="connect-method-icon">⌁</span>
               <div>
-                <small>ACCOUNT DATA</small>
-                <h2>Connect accounts</h2>
-                <p>
-                  Connect supported banks, brokerages and financial accounts
-                  through a provider-ready authorization flow.
-                </p>
+                <small>{t('connectAccounts.accountData')}</small>
+                <h2>{t('connectAccounts.connectAccounts')}</h2>
+                <p>{t('connectAccounts.connectAccountsDescription')}</p>
               </div>
-              <b>Connect →</b>
+              <b>{t('connectAccounts.connect')} →</b>
             </button>
 
             <button type="button" onClick={() => setMode('statement')}>
               <span className="connect-method-icon">↑</span>
               <div>
-                <small>DOCUMENT IMPORT</small>
-                <h2>Upload statement</h2>
-                <p>
-                  Import PDF or CSV statements and review extracted information
-                  before anything enters your Financial Twin.
-                </p>
+                <small>{t('connectAccounts.documentImport')}</small>
+                <h2>{t('connectAccounts.uploadStatement')}</h2>
+                <p>{t('connectAccounts.uploadStatementDescription')}</p>
               </div>
-              <b>Upload →</b>
+              <b>{t('connectAccounts.upload')} →</b>
             </button>
 
             <button type="button" onClick={onContinueManual}>
               <span className="connect-method-icon">＋</span>
               <div>
-                <small>MANUAL CONTROL</small>
-                <h2>Enter manually</h2>
-                <p>
-                  Build the twin yourself when you prefer not to connect or
-                  upload financial data.
-                </p>
+                <small>{t('connectAccounts.manualControl')}</small>
+                <h2>{t('connectAccounts.enterManually')}</h2>
+                <p>{t('connectAccounts.enterManuallyDescription')}</p>
               </div>
-              <b>Start →</b>
+              <b>{t('connectAccounts.start')} →</b>
             </button>
           </section>
 
           <div className="connect-global-note">
-            <span>GLOBAL BY DESIGN</span>
-            <p>
-              Portelyx is not tied to one country, bank or provider. Financial
-              sources are normalized into a currency-aware Financial Twin.
-            </p>
+            <span>{t('connectAccounts.globalByDesign')}</span>
+            <p>{t('connectAccounts.globalDescription')}</p>
           </div>
         </section>
       </main>
@@ -505,27 +491,25 @@ export default function ConnectAccounts({
         <nav className="connect-nav">
           <div className="logo">PORTELYX</div>
           <button className="nav-button" type="button" onClick={() => setMode('accounts')}>
-            ← Back
+            ← {t('connectAccounts.back')}
           </button>
         </nav>
 
         <section className="connect-hub-shell">
           <header className="connect-hub-heading compact">
-            <p className="connect-eyebrow">CONNECTED ACCOUNT REVIEW</p>
-            <h1>Review what Portelyx received.</h1>
-            <p>
-              These sandbox accounts were retrieved through the connected account
-              provider and normalized before entering your Financial Twin.
-            </p>
+            <p className="connect-eyebrow">{t('connectAccounts.accountReviewEyebrow')}</p>
+            <h1>{t('connectAccounts.accountReviewTitle')}</h1>
+            <p>{t('connectAccounts.accountReviewDescription')}</p>
           </header>
 
           <section className="account-import-review">
             <div className="account-import-summary">
-              <span className="statement-status live">CONNECTED</span>
-              <h2>{accountImport.summary.account_count} accounts detected</h2>
+              <span className="statement-status live">{t('connectAccounts.connected')}</span>
+              <h2>{t('connectAccounts.accountsDetected', { count: accountImport.summary.account_count })}</h2>
               <p>
-                Provider: {accountImport.provider} · Currencies:{' '}
-                {accountImport.summary.currencies.join(', ') || 'Not detected'}
+                {t('connectAccounts.provider')}: {accountImport.provider} ·{' '}
+                {t('connectAccounts.currencies')}: {' '}
+                {accountImport.summary.currencies.join(', ') || t('connectAccounts.notDetected')}
               </p>
             </div>
 
@@ -533,8 +517,8 @@ export default function ConnectAccounts({
               {accountImport.accounts.map((account) => (
                 <article className="account-import-row" key={String(account.provider_account_id)}>
                   <div>
-                    <strong>{account.name || 'Financial account'}</strong>
-                    <span>{account.account_type || 'Unknown type'} · {account.category}</span>
+                    <strong>{account.name || t('connectAccounts.financialAccount')}</strong>
+                    <span>{account.account_type || t('connectAccounts.unknownType')} · {account.category}</span>
                   </div>
                   <strong>{formatAmount(account.balance, account.currency)}</strong>
                 </article>
@@ -545,37 +529,33 @@ export default function ConnectAccounts({
               {Object.entries(accountImport.summary.totals_by_currency).map(([currency, totals]) => (
                 <article key={currency}>
                   <strong>{currency}</strong>
-                  <span>Cash {formatAmount(totals.cash, currency)}</span>
-                  <span>Debt {formatAmount(totals.debt, currency)}</span>
-                  <span>Investments {formatAmount(totals.investment, currency)}</span>
+                  <span>{t('connectAccounts.cash')} {formatAmount(totals.cash, currency)}</span>
+                  <span>{t('connectAccounts.debt')} {formatAmount(totals.debt, currency)}</span>
+                  <span>{t('connectAccounts.investments')} {formatAmount(totals.investment, currency)}</span>
                 </article>
               ))}
             </div>
 
             <div className="statement-next">
               <div>
-                <strong>Review before building.</strong>
-                <span>
-                  Connected data stays separated by currency. Portelyx will not
-                  silently add different currencies together.
-                </span>
+                <strong>{t('connectAccounts.reviewBeforeBuilding')}</strong>
+                <span>{t('connectAccounts.currencySeparation')}</span>
               </div>
-              
-                <button
-  type="button"
-  onClick={() =>
-    onContinueConnected({
-  provider: accountImport.provider,
-  environment: accountImport.environment,
-  ingestedAt: accountImport.ingested_at,
-  accounts: accountImport.accounts,
-  currencies: accountImport.summary.currencies,
-  totalsByCurrency: accountImport.summary.totals_by_currency,
-})
-  }
->
-  Continue with connected data <span>→</span>
-</button>
+              <button
+                type="button"
+                onClick={() =>
+                  onContinueConnected({
+                    provider: accountImport.provider,
+                    environment: accountImport.environment,
+                    ingestedAt: accountImport.ingested_at,
+                    accounts: accountImport.accounts,
+                    currencies: accountImport.summary.currencies,
+                    totalsByCurrency: accountImport.summary.totals_by_currency,
+                  })
+                }
+              >
+                {t('connectAccounts.continueConnectedData')} <span>→</span>
+              </button>
             </div>
           </section>
         </section>
@@ -599,18 +579,17 @@ export default function ConnectAccounts({
               setStatementError('')
             }}
           >
-            ← Back
+            ← {t('connectAccounts.back')}
           </button>
         </nav>
 
         <section className="connect-hub-shell">
           <header className="connect-hub-heading compact">
-            <p className="connect-eyebrow">STATEMENT IMPORT</p>
-            <h1>Upload. Review. Then build.</h1>
-            <p>
-              Portelyx never silently treats extracted statement data as truth.
-              You review the import before it becomes part of the Financial Twin.
-            </p>
+            <p className="connect-eyebrow">
+  {t('connectAccounts.statementEyebrow')}
+</p>
+<h1>{t('connectAccounts.statementTitle')}</h1>
+<p>{t('connectAccounts.statementDescription')}</p>
           </header>
 
           <section className="statement-layout">
@@ -630,8 +609,8 @@ export default function ConnectAccounts({
                   onClick={() => fileInput.current?.click()}
                 >
                   <span>↑</span>
-                  <strong>Choose a bank or financial statement</strong>
-                  <small>PDF or CSV · your file stays under your control</small>
+                  <strong>{t('connectAccounts.chooseStatement')}</strong>
+<small>{t('connectAccounts.statementFileControl')}</small>
                 </button>
               ) : (
                 <div className="statement-file-card">
@@ -652,7 +631,7 @@ export default function ConnectAccounts({
                       if (fileInput.current) fileInput.current.value = ''
                     }}
                   >
-                    Remove
+                    {t('connectAccounts.remove')}
                   </button>
                 </div>
               )}
@@ -664,48 +643,54 @@ export default function ConnectAccounts({
               <div className="statement-privacy">
                 <span>✓</span>
                 <p>
-                  <strong>Review before import</strong>
-                  <small>
-                    Extracted balances and transactions must be confirmed before
-                    Portelyx updates a Financial Twin.
-                  </small>
+                  <strong>{t('connectAccounts.reviewBeforeImport')}</strong>
+<small>
+  {t('connectAccounts.reviewBeforeImportDescription')}
+</small>
                 </p>
               </div>
             </div>
 
             <aside className="statement-review">
-              <p className="connect-eyebrow">IMPORT REVIEW</p>
+              <p className="connect-eyebrow">
+  {t('connectAccounts.importReview')}
+</p>
 
               {!statement && (
                 <div className="statement-empty">
-                  <strong>No statement selected.</strong>
-                  <span>Your extracted information will appear here for review.</span>
+                  <strong>{t('connectAccounts.noStatementSelected')}</strong>
+<span>{t('connectAccounts.extractedInformation')}</span>
                 </div>
               )}
 
               {statement && !parseResult && (
                 <div className="statement-pdf-ready">
-                  <span className="statement-status">FILE READY</span>
-                  <h2>
-                    {statement.fileType.toUpperCase()} selected successfully.
-                  </h2>
-                  <p>
-                    Send this file to Portelyx's local statement parser. Nothing
-                    enters the Financial Twin until you review the detected rows.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={extractStatement}
-                    disabled={parseLoading}
-                  >
-                    {parseLoading ? 'Extracting...' : 'Extract statement'}
-                    <span>{parseLoading ? '···' : '→'}</span>
-                  </button>
-                  <small>
-                    CSV and text-based PDF statements are supported. Scanned
-                    image-only PDFs are deliberately rejected until an OCR adapter
-                    is added.
-                  </small>
+                  <span className="statement-status">
+  {t('connectAccounts.fileReady')}
+</span>
+
+<h2>
+  {t('connectAccounts.fileSelected', {
+    type: statement.fileType.toUpperCase(),
+  })}
+</h2>
+
+<p>{t('connectAccounts.fileReadyDescription')}</p>
+
+<button
+  type="button"
+  onClick={extractStatement}
+  disabled={parseLoading}
+>
+  {parseLoading
+    ? t('connectAccounts.extracting')
+    : t('connectAccounts.extractStatement')}
+  <span>{parseLoading ? '···' : '→'}</span>
+</button>
+
+<small>
+  {t('connectAccounts.statementSupport')}
+</small>
                 </div>
               )}
 
@@ -714,18 +699,21 @@ export default function ConnectAccounts({
                   <div className="statement-review-top">
                     <div>
                       <span className="statement-status live">
-                        READY FOR REVIEW
-                      </span>
-                      <h2>
-                        {parseResult.summary.transaction_count} transactions detected
-                      </h2>
+  {t('connectAccounts.readyForReview')}
+</span>
+
+<h2>
+  {t('connectAccounts.transactionsDetected', {
+    count: parseResult.summary.transaction_count,
+  })}
+</h2>
                     </div>
                     <span>{parseResult.file_type.toUpperCase()}</span>
                   </div>
 
                   <div className="statement-summary-grid">
                     <div>
-                      <span>Detected income</span>
+                      <span>{t('connectAccounts.detectedIncome')}</span>
                       <strong>
                         {parseResult.summary.total_income.toLocaleString(undefined, {
                           maximumFractionDigits: 2,
@@ -733,7 +721,7 @@ export default function ConnectAccounts({
                       </strong>
                     </div>
                     <div>
-                      <span>Detected expenses</span>
+                      <span>{t('connectAccounts.detectedExpenses')}</span>
                       <strong>
                         {parseResult.summary.total_expenses.toLocaleString(undefined, {
                           maximumFractionDigits: 2,
@@ -741,10 +729,10 @@ export default function ConnectAccounts({
                       </strong>
                     </div>
                     <div>
-                      <span>Detected balance</span>
+                      <span>{t('connectAccounts.detectedBalance')}</span>
                       <strong>
                         {parseResult.summary.detected_balance === null
-                          ? 'Not detected'
+                          ? t('connectAccounts.notDetected')
                           : parseResult.summary.detected_balance.toLocaleString(
                               undefined,
                               { maximumFractionDigits: 2 },
@@ -755,7 +743,7 @@ export default function ConnectAccounts({
 
                   {parseResult.warnings.length > 0 && (
                     <div className="statement-parser-warnings">
-                      <strong>Review notes</strong>
+                      <strong>{t('connectAccounts.reviewNotes')}</strong>
                       {parseResult.warnings.map((warning) => (
                         <span key={warning}>• {warning}</span>
                       ))}
@@ -771,7 +759,10 @@ export default function ConnectAccounts({
                         <div className="statement-transaction-copy">
                           <strong>{transaction.description}</strong>
                           <span>
-                            {transaction.date} · {transaction.confidence} confidence
+                            {transaction.date} ·{' '}
+{t('connectAccounts.confidence', {
+  level: transaction.confidence,
+})}
                           </span>
                         </div>
 
@@ -781,7 +772,9 @@ export default function ConnectAccounts({
                             min="0"
                             step="0.01"
                             value={transaction.amount}
-                            aria-label={`Amount for ${transaction.description}`}
+                            aria-label={t('connectAccounts.amountFor', {
+                              description: transaction.description,
+                            })}
                             onChange={(event) =>
                               updateTransaction(transaction.transaction_id, {
                                 amount: Math.max(0, Number(event.target.value)),
@@ -791,7 +784,9 @@ export default function ConnectAccounts({
 
                           <select
                             value={transaction.direction}
-                            aria-label={`Direction for ${transaction.description}`}
+                            aria-label={t('connectAccounts.directionFor', {
+                              description: transaction.description,
+                            })}
                             onChange={(event) =>
                               updateTransaction(transaction.transaction_id, {
                                 direction: event.target.value as
@@ -800,14 +795,16 @@ export default function ConnectAccounts({
                               })
                             }
                           >
-                            <option value="income">Income</option>
-                            <option value="expense">Expense</option>
+                            <option value="income">{t('connectAccounts.income')}</option>
+                            <option value="expense">{t('connectAccounts.expense')}</option>
                           </select>
 
                           <input
                             type="text"
                             value={transaction.category}
-                            aria-label={`Category for ${transaction.description}`}
+                            aria-label={t('connectAccounts.categoryFor', {
+                              description: transaction.description,
+                            })}
                             onChange={(event) =>
                               updateTransaction(transaction.transaction_id, {
                                 category: event.target.value,
@@ -821,11 +818,8 @@ export default function ConnectAccounts({
 
                   <div className="statement-next">
                     <div>
-                      <strong>Review is mandatory.</strong>
-                      <span>
-                        Correct any amount, direction or category that Portelyx
-                        interpreted incorrectly before building the Financial Twin.
-                      </span>
+                      <strong>{t('connectAccounts.reviewMandatory')}</strong>
+                      <span>{t('connectAccounts.reviewMandatoryDescription')}</span>
                     </div>
                     <button
                       type="button"
@@ -840,7 +834,7 @@ export default function ConnectAccounts({
                         })
                       }
                     >
-                      Continue with reviewed data
+                      {t('connectAccounts.continueReviewedData')}
                       <span>→</span>
                     </button>
                   </div>
@@ -858,24 +852,25 @@ export default function ConnectAccounts({
       <nav className="connect-nav">
         <div className="logo">PORTELYX</div>
         <button className="nav-button" type="button" onClick={() => setMode('choose')}>
-          ← Back
+          ← {t('connectAccounts.back')}
         </button>
       </nav>
 
       <section className="connect-shell">
         <header className="connect-heading">
           <div>
-            <p className="connect-eyebrow">ACCOUNT CONNECTION</p>
-            <h1>Connect supported financial accounts.</h1>
-            <p>
-              Choose the type of financial source you want to bring into
-              Portelyx. The interface stays provider-neutral and global.
-            </p>
+            <p className="connect-eyebrow">
+  {t('connectAccounts.accountConnectionEyebrow')}
+</p>
+
+<h1>{t('connectAccounts.accountConnectionTitle')}</h1>
+
+<p>{t('connectAccounts.accountConnectionDescription')}</p>
           </div>
 
           <div className="connect-security">
             <span className="connect-security-dot" />
-            Provider-ready architecture
+            {t('connectAccounts.providerReadyArchitecture')}
           </div>
         </header>
 
@@ -883,11 +878,13 @@ export default function ConnectAccounts({
           <section className="connect-panel">
             <div className="connect-panel-heading">
               <div>
-                <span>ACCOUNT SOURCES</span>
-                <h2>What would you like to connect?</h2>
+                <span>{t('connectAccounts.accountSources')}</span>
+<h2>{t('connectAccounts.whatToConnect')}</h2>
               </div>
               <span className="connect-count">
-                {connectedAccounts.length} connected
+                {t('connectAccounts.connectedCount', {
+  count: connectedAccounts.length,
+})}
               </span>
             </div>
 
@@ -897,8 +894,8 @@ export default function ConnectAccounts({
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search account types"
-                aria-label="Search account types"
+                placeholder={t('connectAccounts.searchAccountTypes')}
+aria-label={t('connectAccounts.searchAccountTypes')}
               />
             </label>
 
@@ -927,7 +924,9 @@ export default function ConnectAccounts({
                           : 'provider-status'
                       }
                     >
-                      {connected ? 'Connected' : 'Connect'}
+                      {connected
+  ? t('connectAccounts.connectedStatus')
+  : t('connectAccounts.connectStatus')}
                     </span>
                   </button>
                 )
@@ -936,49 +935,45 @@ export default function ConnectAccounts({
 
             <div className="connect-provider-note">
               <span>i</span>
-              <p>
-                Portelyx never asks for a banking password directly. Production
-                connections will be delegated to authorized account-data
-                providers. This hackathon build currently demonstrates the
-                authorization boundary with a sandbox connection.
-              </p>
+              <p>{t('connectAccounts.providerSecurityNote')}</p>
             </div>
           </section>
 
           <aside className="twin-builder">
-            <p className="connect-eyebrow">FINANCIAL TWIN</p>
-            <h2>Your picture builds as you connect.</h2>
+            <p className="connect-eyebrow">
+  {t('connectAccounts.financialTwin')}
+</p>
+<h2>{t('connectAccounts.twinBuildsAsYouConnect')}</h2>
 
             <div className="twin-builder-list">
               <TwinItem
-                label="Bank & cash"
-                connected={connectedAccounts.some(
-                  (account) => account.kind === 'bank',
-                )}
-              />
-              <TwinItem
-                label="Investments"
-                connected={connectedAccounts.some(
-                  (account) => account.kind === 'investment',
-                )}
-              />
-              <TwinItem label="Income" connected={false} />
-              <TwinItem label="Expenses" connected={false} />
-              <TwinItem label="Debts" connected={false} />
-              <TwinItem label="Goals" connected={false} />
+  label={t('connectAccounts.bankAndCash')}
+  connected={connectedAccounts.some(
+    (account) => account.kind === 'bank',
+  )}
+/>
+
+<TwinItem
+  label={t('connectAccounts.investments')}
+  connected={connectedAccounts.some(
+    (account) => account.kind === 'investment',
+  )}
+/>
+
+<TwinItem label={t('connectAccounts.income')} connected={false} />
+<TwinItem label={t('connectAccounts.expense')} connected={false} />
+<TwinItem label={t('connectAccounts.debts')} connected={false} />
+<TwinItem label={t('connectAccounts.goals')} connected={false} />
             </div>
 
             <div className="twin-builder-footer">
-              <p>
-                Connect what is available, upload statements for unsupported
-                institutions, or add the rest manually.
-              </p>
+              <p>{t('connectAccounts.twinBuilderDescription')}</p>
               <button
                 className="connect-primary"
                 type="button"
                 onClick={onContinueManual}
               >
-                Continue building
+                {t('connectAccounts.continueBuilding')}
                 <span>→</span>
               </button>
             </div>
@@ -1007,41 +1002,40 @@ export default function ConnectAccounts({
                 type="button"
                 className="connect-modal-close"
                 onClick={() => setSelectedProvider(null)}
-                aria-label="Close"
+                aria-label={t('common.close')}
               >
                 ×
               </button>
             </div>
 
-            <p className="connect-eyebrow">SANDBOX CONNECTION</p>
-            <h2 id="connect-modal-title">
-              Connect {selectedProvider.name}
-            </h2>
-            <p>
-              This demonstrates the authorization boundary without collecting
-              real financial credentials. A production aggregation provider can
-              replace the adapter without changing the Financial Twin model.
-            </p>
+            <p className="connect-eyebrow">
+  {t('connectAccounts.sandboxConnection')}
+</p>
+
+<h2 id="connect-modal-title">
+  {t('connectAccounts.connectProvider', {
+    provider: selectedProvider.name,
+  })}
+</h2>
+            <p>{t('connectAccounts.sandboxDescription')}</p>
 
             <div className="connect-permissions">
               <div>
                 <span>✓</span>
                 <p>
-                  <strong>Read financial data</strong>
-                  <small>
-                    Balances and account information needed for your Financial
-                    Twin.
-                  </small>
+                  <strong>{t('connectAccounts.readFinancialData')}</strong>
+<small>
+  {t('connectAccounts.readFinancialDataDescription')}
+</small>
                 </p>
               </div>
               <div>
                 <span>✓</span>
                 <p>
-                  <strong>No trading permission</strong>
-                  <small>
-                    Portelyx simulates decisions. It does not move money or
-                    execute trades.
-                  </small>
+                  <strong>{t('connectAccounts.noTradingPermission')}</strong>
+<small>
+  {t('connectAccounts.noTradingPermissionDescription')}
+</small>
                 </p>
               </div>
             </div>
@@ -1054,7 +1048,9 @@ export default function ConnectAccounts({
               onClick={connectSandboxAccount}
               disabled={accountLoading}
             >
-              {accountLoading ? 'Connecting to sandbox...' : 'Authorize sandbox connection'}
+              {accountLoading
+  ? t('connectAccounts.connectingToSandbox')
+  : t('connectAccounts.authorizeSandboxConnection')}
               <span>{accountLoading ? '···' : '→'}</span>
             </button>
           </section>
@@ -1071,6 +1067,8 @@ function TwinItem({
   label: string
   connected: boolean
 }) {
+  const { t } = usePortelyxLanguage()
+
   return (
     <div
       className={
@@ -1083,7 +1081,11 @@ function TwinItem({
         {connected ? '✓' : ''}
       </span>
       <strong>{label}</strong>
-      <small>{connected ? 'Connected' : 'Add later'}</small>
+      <small>
+  {connected
+    ? t('connectAccounts.connectedStatus')
+    : t('connectAccounts.addLater')}
+</small>
     </div>
   )
 }

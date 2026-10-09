@@ -1,0 +1,267 @@
+﻿.px-mcp-simulator {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  color: var(--text-primary, #17243c);
+}
+
+.px-mcp-simulator > header {
+  margin-bottom: 28px;
+}
+
+.px-mcp-simulator > header > p:first-child {
+  color: #8063c9;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.px-mcp-simulator h1 {
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin: 10px 0;
+}
+
+.px-mcp-simulator > header > p:last-child {
+  max-width: 650px;
+  line-height: 1.7;
+  opacity: 0.75;
+}
+
+.px-mcp-input,
+.px-mcp-results {
+  background: var(--surface, #ffffff);
+  border: 1px solid rgba(130, 115, 170, 0.16);
+  border-radius: 22px;
+  padding: 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 35px rgba(35, 24, 70, 0.05);
+}
+
+.px-mcp-input label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.px-mcp-input textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border: 1px solid #d9d4e8;
+  border-radius: 14px;
+  background: var(--surface, #ffffff);
+  color: inherit;
+  font: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+
+.px-mcp-input textarea:focus {
+  border-color: #8063c9;
+  box-shadow: 0 0 0 3px rgba(128, 99, 201, 0.12);
+}
+
+.px-mcp-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 24px;
+}
+
+.px-mcp-examples button {
+  padding: 10px 14px;
+  border: 1px solid #ddd5f0;
+  border-radius: 12px;
+  background: #f5f1ff;
+  color: #6044a2;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.px-mcp-examples button:hover:not(:disabled) {
+  background: #e9dfff;
+}
+
+.px-mcp-input > button:last-child {
+  padding: 14px 24px;
+  border: 0;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #7652c4, #453188);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.px-mcp-input button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.px-mcp-results h2 {
+  margin: 0 0 18px;
+  font-size: 24px;
+}
+
+.px-mcp-results h3 {
+  margin-top: 28px;
+  font-size: 17px;
+}
+
+.px-mcp-results pre {
+  overflow-x: auto;
+  padding: 16px;
+  border-radius: 12px;
+  background: #171b32;
+  color: #e9e5ff;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.px-mcp-simulator [role="alert"] {
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #fff0f0;
+  color: #a82d43;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+  .px-mcp-simulator {
+    padding: 12px;
+  }
+
+  .px-mcp-input,
+  .px-mcp-results {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .px-mcp-examples {
+    flex-direction: column;
+  }
+}
+
+/* Improve readability on the dark PORTELYX workspace */
+.px-mcp-simulator > header {
+  text-align: center;
+}
+
+.px-mcp-simulator > header h1 {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.px-mcp-simulator > header > p:last-child {
+  color: #d7d1e9;
+  opacity: 1;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.px-mcp-simulator > header > p:first-child {
+  color: #b69aff;
+  opacity: 1;
+}
+
+/* MCP Simulator financial result cards */
+.px-mcp-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.px-mcp-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid #e8e1f4;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #faf8ff, #f0ebfa);
+}
+
+.px-mcp-metric span {
+  color: #716584;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.px-mcp-metric strong {
+  color: #332353;
+  font-size: clamp(21px, 2.5vw, 29px);
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  overflow-wrap: anywhere;
+}
+
+.px-mcp-metric:last-child {
+  background: linear-gradient(145deg, #f0fff7, #e4f8ed);
+  border-color: #c9e9d6;
+}
+
+.px-mcp-metric:last-child strong {
+  color: #176a47;
+}
+
+@media (max-width: 760px) {
+  .px-mcp-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* MCP Simulator financial result cards */
+.px-mcp-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.px-mcp-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid #e8e1f4;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #faf8ff, #f0ebfa);
+}
+
+.px-mcp-metric span {
+  color: #716584;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.px-mcp-metric strong {
+  color: #332353;
+  font-size: clamp(21px, 2.5vw, 29px);
+  font-weight: 800;
+  letter-spacing: -0.7px;
+  overflow-wrap: anywhere;
+}
+
+.px-mcp-metric:last-child {
+  background: linear-gradient(145deg, #f0fff7, #e4f8ed);
+  border-color: #c9e9d6;
+}
+
+.px-mcp-metric:last-child strong {
+  color: #176a47;
+}
+
+@media (max-width: 760px) {
+  .px-mcp-metrics {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { usePortelyxLanguage } from './i18n'
 import './StatementSetupFlow.css'
 
 type Currency = {
@@ -34,6 +35,7 @@ export default function StatementSetupFlow({
   onBack,
   onConfirm,
 }: Props) {
+  const { t } = usePortelyxLanguage()
   const [currencySearch, setCurrencySearch] = useState('')
   const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(null)
   const [statementMonths, setStatementMonths] = useState('1')
@@ -66,18 +68,15 @@ export default function StatementSetupFlow({
       <nav className="statement-setup-nav">
         <div className="logo">PORTELYX</div>
         <button className="nav-button" type="button" onClick={onBack}>
-          ← Back
+          ← {t('statementSetup.back')}
         </button>
       </nav>
 
       <section className="statement-setup-shell">
         <header className="statement-setup-heading">
-          <p>STATEMENT SETUP</p>
-          <h1>Confirm what this statement represents.</h1>
-          <span>
-            Portelyx will not treat statement totals as monthly values until you
-            confirm the period and base currency.
-          </span>
+          <p>{t('statementSetup.eyebrow')}</p>
+          <h1>{t('statementSetup.title')}</h1>
+          <span>{t('statementSetup.description')}</span>
         </header>
 
         <div className="statement-setup-grid">
@@ -86,12 +85,12 @@ export default function StatementSetupFlow({
               <span>{statement.fileType.toUpperCase()}</span>
               <div>
                 <strong>{statement.fileName}</strong>
-                <small>{statement.transactionCount} reviewed transactions</small>
+                <small>{t('statementSetup.reviewedTransactions', { count: statement.transactionCount })}</small>
               </div>
             </div>
 
             <label>
-              <span>Base currency</span>
+              <span>{t('statementSetup.baseCurrency')}</span>
               <div className="statement-currency-search">
                 <input
                   type="text"
@@ -100,7 +99,7 @@ export default function StatementSetupFlow({
                       ? `${selectedCurrency.code} — ${selectedCurrency.name}`
                       : currencySearch
                   }
-                  placeholder="Search currency, e.g. USD or Dollar"
+                  placeholder={t('statementSetup.currencyPlaceholder')}
                   onChange={(event) => {
                     setSelectedCurrency(null)
                     setCurrencySearch(event.target.value)
@@ -128,7 +127,7 @@ export default function StatementSetupFlow({
             </label>
 
             <label>
-              <span>Statement period</span>
+              <span>{t('statementSetup.statementPeriod')}</span>
               <div className="statement-period-control">
                 <input
                   type="number"
@@ -137,53 +136,47 @@ export default function StatementSetupFlow({
                   value={statementMonths}
                   onChange={(event) => setStatementMonths(event.target.value)}
                 />
-                <small>months represented by this file</small>
+                <small>{t('statementSetup.monthsRepresented')}</small>
               </div>
             </label>
 
             <div className="statement-period-note">
-              Use 1 for one month, 3 for a quarterly statement, 6 for six months,
-              and so on. Portelyx divides reviewed totals by this period only after
-              you confirm it.
+              {t('statementSetup.periodNote')}
             </div>
           </section>
 
           <aside className="statement-normalized-preview">
-            <p>NORMALIZED PREVIEW</p>
-            <h2>What will enter setup.</h2>
+            <p>{t('statementSetup.previewEyebrow')}</p>
+            <h2>{t('statementSetup.previewTitle')}</h2>
 
             <div className="statement-normalized-values">
               <div>
-                <span>Monthly income</span>
+                <span>{t('statementSetup.monthlyIncome')}</span>
                 <strong>
                   {validMonths ? formatNumber(monthlyIncome) : '—'}
                 </strong>
               </div>
 
               <div>
-                <span>Monthly expenses</span>
+                <span>{t('statementSetup.monthlyExpenses')}</span>
                 <strong>
                   {validMonths ? formatNumber(monthlyExpenses) : '—'}
                 </strong>
               </div>
 
               <div>
-                <span>Available cash</span>
+                <span>{t('statementSetup.availableCash')}</span>
                 <strong>
                   {statement.detectedBalance === null
-                    ? 'Not detected'
+                    ? t('statementSetup.notDetected')
                     : formatNumber(statement.detectedBalance)}
                 </strong>
               </div>
             </div>
 
             <div className="statement-normalized-note">
-              <strong>Nothing is final yet.</strong>
-              <span>
-                After confirmation, these values prefill Financial Twin setup.
-                You can still add or correct assets, debts, investments and goals
-                before building the Twin.
-              </span>
+              <strong>{t('statementSetup.nothingFinal')}</strong>
+              <span>{t('statementSetup.prefillNote')}</span>
             </div>
 
             <button
@@ -202,7 +195,7 @@ export default function StatementSetupFlow({
                 })
               }}
             >
-              Continue to Financial Twin setup
+              {t('statementSetup.continueToTwin')}
               <span>→</span>
             </button>
           </aside>

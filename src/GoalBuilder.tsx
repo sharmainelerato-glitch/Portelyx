@@ -1,3 +1,4 @@
+import { usePortelyxLanguage } from './i18n'
 import './GoalBuilder.css'
 
 export type GoalInput = {
@@ -24,6 +25,8 @@ export default function GoalBuilder({
   defaultCurrency,
   onChange,
 }: Props) {
+  const { t } = usePortelyxLanguage()
+
   const addGoal = () => {
     onChange([
       ...goals,
@@ -68,14 +71,10 @@ export default function GoalBuilder({
       <div className="goal-builder-heading">
         <div>
           <p className="onboarding-label">
-            FINANCIAL GOALS
+            {t('manualSetup.financialGoals')}
           </p>
-          <h2>What are you building toward?</h2>
-          <p>
-            Add any financial target. Portelyx uses the details
-            you provide to calculate the path, test scenarios,
-            and show what changes.
-          </p>
+          <h2>{t('manualSetup.goalBuilderTitle')}</h2>
+          <p>{t('manualSetup.goalBuilderDescription')}</p>
         </div>
 
         <button
@@ -83,7 +82,7 @@ export default function GoalBuilder({
           type="button"
           onClick={addGoal}
         >
-          + Add goal
+          + {t('manualSetup.addGoal')}
         </button>
       </div>
 
@@ -96,12 +95,8 @@ export default function GoalBuilder({
           <span className="goal-empty-mark">◎</span>
 
           <span className="goal-empty-copy">
-            <strong>Add your first goal</strong>
-            <small>
-              A business, home, tuition, travel, emergency
-              fund, retirement plan — or anything else with
-              a financial target.
-            </small>
+            <strong>{t('manualSetup.addFirstGoal')}</strong>
+            <small>{t('manualSetup.goalExamples')}</small>
           </span>
 
           <span className="goal-empty-arrow">→</span>
@@ -130,9 +125,9 @@ export default function GoalBuilder({
                   </div>
 
                   <div className="goal-card-title">
-                    <span>GOAL</span>
+                    <span>{t('manualSetup.goalLabel')}</span>
                     <strong>
-                      {goal.name.trim() || 'Untitled goal'}
+                      {goal.name.trim() || t('manualSetup.untitledGoal')}
                     </strong>
                   </div>
 
@@ -141,17 +136,17 @@ export default function GoalBuilder({
                     className="goal-remove"
                     onClick={() => removeGoal(goal.id)}
                   >
-                    Remove
+                    {t('manualSetup.remove')}
                   </button>
                 </div>
 
                 <div className="goal-primary-fields">
                   <label className="goal-field goal-field-name">
-                    <span>What are you working toward?</span>
+                    <span>{t('manualSetup.goalQuestion')}</span>
                     <input
                       type="text"
                       value={goal.name}
-                      placeholder="e.g. Start my business"
+                      placeholder={t('manualSetup.goalNamePlaceholder')}
                       onChange={(event) =>
                         updateGoal(
                           goal.id,
@@ -163,7 +158,7 @@ export default function GoalBuilder({
                   </label>
 
                   <label className="goal-field">
-                    <span>Target amount</span>
+                    <span>{t('manualSetup.targetAmount')}</span>
                     <input
                       type="number"
                       min="0"
@@ -181,7 +176,7 @@ export default function GoalBuilder({
                   </label>
 
                   <label className="goal-field">
-                    <span>Target date</span>
+                    <span>{t('manualSetup.targetDate')}</span>
                     <input
                       type="date"
                       value={goal.targetDate}
@@ -198,7 +193,7 @@ export default function GoalBuilder({
 
                 <div className="goal-secondary-fields">
                   <label className="goal-field">
-                    <span>Already saved</span>
+                    <span>{t('manualSetup.alreadySaved')}</span>
                     <input
                       type="number"
                       min="0"
@@ -216,7 +211,7 @@ export default function GoalBuilder({
                   </label>
 
                   <label className="goal-field">
-                    <span>Monthly contribution</span>
+                    <span>{t('manualSetup.monthlyContribution')}</span>
                     <input
                       type="number"
                       min="0"
@@ -234,7 +229,7 @@ export default function GoalBuilder({
                   </label>
 
                   <label className="goal-field">
-                    <span>Currency</span>
+                    <span>{t('manualSetup.currency')}</span>
                     <input
                       type="text"
                       maxLength={3}
@@ -253,17 +248,17 @@ export default function GoalBuilder({
 
                 <details className="goal-details">
                   <summary>
-                    Add optional details
+                    {t('manualSetup.addOptionalDetails')}
                     <span>＋</span>
                   </summary>
 
                   <div className="goal-detail-fields">
                     <label className="goal-field">
-                      <span>Category</span>
+                      <span>{t('manualSetup.category')}</span>
                       <input
                         type="text"
                         value={goal.category}
-                        placeholder="custom"
+                        placeholder={t('manualSetup.custom')}
                         onChange={(event) =>
                           updateGoal(
                             goal.id,
@@ -275,11 +270,11 @@ export default function GoalBuilder({
                     </label>
 
                     <label className="goal-field">
-                      <span>Priority</span>
+                      <span>{t('manualSetup.priority')}</span>
                       <input
                         type="text"
                         value={goal.priority}
-                        placeholder="Optional"
+                        placeholder={t('manualSetup.optional')}
                         onChange={(event) =>
                           updateGoal(
                             goal.id,
@@ -291,11 +286,11 @@ export default function GoalBuilder({
                     </label>
 
                     <label className="goal-field goal-field-notes">
-                      <span>Notes</span>
+                      <span>{t('manualSetup.notes')}</span>
                       <input
                         type="text"
                         value={goal.notes}
-                        placeholder="Anything Portelyx should know"
+                        placeholder={t('manualSetup.notesPlaceholder')}
                         onChange={(event) =>
                           updateGoal(
                             goal.id,
@@ -312,13 +307,17 @@ export default function GoalBuilder({
                   <div className="goal-progress-copy">
                     <span>
                       {target > 0
-                        ? `${progress.toFixed(0)}% funded`
-                        : 'Add a target to see progress'}
+                        ? t('manualSetup.funded', {
+                            progress: progress.toFixed(0),
+                          })
+                        : t('manualSetup.addTargetForProgress')}
                     </span>
 
                     {goal.targetDate && (
                       <small>
-                        Target {goal.targetDate}
+                        {t('manualSetup.targetDateDisplay', {
+                          date: goal.targetDate,
+                        })}
                       </small>
                     )}
                   </div>
@@ -342,19 +341,14 @@ export default function GoalBuilder({
             onClick={addGoal}
           >
             <span>＋</span>
-            Add another goal
+            {t('manualSetup.addAnotherGoal')}
           </button>
         </div>
       )}
 
       <div className="goal-builder-note">
         <span>i</span>
-        <p>
-          Portelyx does not assume an investment return here.
-          Goal projections use the amounts and contributions
-          you provide unless a separate scenario explicitly
-          introduces another assumption.
-        </p>
+        <p>{t('manualSetup.goalProjectionNote')}</p>
       </div>
     </section>
   )

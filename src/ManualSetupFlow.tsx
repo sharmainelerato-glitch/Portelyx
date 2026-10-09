@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import GoalBuilder, { type GoalInput } from './GoalBuilder'
+import { usePortelyxLanguage } from './i18n'
 import './ManualSetupFlow.css'
 
 type Currency = { code: string; name: string }
@@ -43,17 +44,26 @@ type Props = {
   buildFinancialTwin: () => void
 }
 
-const steps: { id: SetupStep; label: string }[] = [
-  { id: 'essentials', label: 'Basics' },
-  { id: 'investments', label: 'Investments' },
-  { id: 'goals', label: 'Goals' },
-  { id: 'review', label: 'Review' },
+const stepIds: SetupStep[] = [
+  'essentials',
+  'investments',
+  'goals',
+  'review',
 ]
 
 export default function ManualSetupFlow(props: Props) {
+  const { t } = usePortelyxLanguage()
   const [step, setStep] = useState<SetupStep>('essentials')
   const [showMore, setShowMore] = useState(false)
-  const index = steps.findIndex((item) => item.id === step)
+
+  const steps = [
+    { id: 'essentials' as const, label: t('manualSetup.basics') },
+    { id: 'investments' as const, label: t('manualSetup.investments') },
+    { id: 'goals' as const, label: t('manualSetup.goals') },
+    { id: 'review' as const, label: t('manualSetup.review') },
+  ]
+
+  const index = stepIds.indexOf(step)
 
   const filteredCurrencies = props.currencies
     .filter((currency) => {
@@ -96,15 +106,15 @@ export default function ManualSetupFlow(props: Props) {
       <nav className="twin-setup-nav">
         <div className="logo">PORTELYX</div>
         <button className="twin-exit" type="button" onClick={props.onBack}>
-          Exit setup
+          {t('manualSetup.exitSetup')}
         </button>
       </nav>
 
       <section className="twin-setup-shell">
         <header className="twin-setup-top">
           <div>
-            <p className="twin-kicker">BUILD YOUR FINANCIAL TWIN</p>
-            <h1>One clear picture of your money.</h1>
+            <p className="twin-kicker">{t('manualSetup.buildYourTwin')}</p>
+            <h1>{t('manualSetup.mainTitle')}</h1>
           </div>
 
           <span className="twin-step-count">
@@ -112,7 +122,7 @@ export default function ManualSetupFlow(props: Props) {
           </span>
         </header>
 
-        <div className="twin-stepper" aria-label="Setup progress">
+        <div className="twin-stepper" aria-label={t('manualSetup.setupProgress')}>
           {steps.map((item, itemIndex) => (
             <div
               key={item.id}
@@ -133,17 +143,14 @@ export default function ManualSetupFlow(props: Props) {
           {step === 'essentials' && (
             <section className="twin-focus">
               <div className="twin-focus-heading">
-                <p>YOUR FOUNDATION</p>
-                <h2>Start with your money.</h2>
-                <span>
-                  Just enough to establish the foundation. You can refine
-                  your Financial Twin later.
-                </span>
+                <p>{t('manualSetup.foundationEyebrow')}</p>
+                <h2>{t('manualSetup.foundationTitle')}</h2>
+                <span>{t('manualSetup.foundationDescription')}</span>
               </div>
 
               <div className="twin-form-card">
                 <label className="twin-field twin-currency-field">
-                  <span>Base currency</span>
+                  <span>{t('manualSetup.baseCurrency')}</span>
                   <div className="currency-search">
                     <input
                       type="text"
@@ -152,7 +159,7 @@ export default function ManualSetupFlow(props: Props) {
                           ? `${props.selectedCurrency.code} — ${props.selectedCurrency.name}`
                           : props.currencySearch
                       }
-                      placeholder="Search currency"
+                      placeholder={t('manualSetup.searchCurrency')}
                       autoComplete="off"
                       onChange={(event) => {
                         props.setSelectedCurrency(null)
@@ -184,7 +191,7 @@ export default function ManualSetupFlow(props: Props) {
 
                 <div className="twin-core-grid">
                   <label className="twin-field">
-                    <span>Monthly income</span>
+                    <span>{t('manualSetup.monthlyIncome')}</span>
                     <input
                       type="number"
                       min="0"
@@ -196,7 +203,7 @@ export default function ManualSetupFlow(props: Props) {
                   </label>
 
                   <label className="twin-field">
-                    <span>Monthly spending</span>
+                    <span>{t('manualSetup.monthlySpending')}</span>
                     <input
                       type="number"
                       min="0"
@@ -213,14 +220,14 @@ export default function ManualSetupFlow(props: Props) {
                   className="twin-disclosure"
                   onClick={() => setShowMore((current) => !current)}
                 >
-                  <span>More about your finances</span>
+                  <span>{t('manualSetup.moreAboutFinances')}</span>
                   <strong>{showMore ? '−' : '+'}</strong>
                 </button>
 
                 {showMore && (
                   <div className="twin-more-grid">
                     <label className="twin-field">
-                      <span>Available cash</span>
+                      <span>{t('manualSetup.availableCash')}</span>
                       <input
                         type="number"
                         min="0"
@@ -232,7 +239,7 @@ export default function ManualSetupFlow(props: Props) {
                     </label>
 
                     <label className="twin-field">
-                      <span>Total assets</span>
+                      <span>{t('manualSetup.totalAssets')}</span>
                       <input
                         type="number"
                         min="0"
@@ -244,7 +251,7 @@ export default function ManualSetupFlow(props: Props) {
                     </label>
 
                     <label className="twin-field">
-                      <span>Total debts</span>
+                      <span>{t('manualSetup.totalDebts')}</span>
                       <input
                         type="number"
                         min="0"
@@ -263,12 +270,9 @@ export default function ManualSetupFlow(props: Props) {
           {step === 'investments' && (
             <section className="twin-focus">
               <div className="twin-focus-heading">
-                <p>INVESTMENTS</p>
-                <h2>Where is your money invested?</h2>
-                <span>
-                  Add only what you want Portelyx to model. This step is
-                  optional.
-                </span>
+                <p>{t('manualSetup.investmentsEyebrow')}</p>
+                <h2>{t('manualSetup.investmentsTitle')}</h2>
+                <span>{t('manualSetup.investmentsDescription')}</span>
               </div>
 
               {props.holdings.length === 0 ? (
@@ -279,8 +283,8 @@ export default function ManualSetupFlow(props: Props) {
                 >
                   <span className="twin-empty-icon">＋</span>
                   <span>
-                    <strong>Add an investment</strong>
-                    <small>Stocks, ETFs, funds, crypto and more</small>
+                    <strong>{t('manualSetup.addInvestment')}</strong>
+                    <small>{t('manualSetup.investmentTypes')}</small>
                   </span>
                   <b>→</b>
                 </button>
@@ -290,25 +294,47 @@ export default function ManualSetupFlow(props: Props) {
                     <article className="twin-holding-card" key={holding.id}>
                       <header>
                         <div>
-                          <small>INVESTMENT {holdingIndex + 1}</small>
-                          <strong>{holding.name || 'New investment'}</strong>
+                          <small>
+                            {t('manualSetup.investmentNumber', {
+                              number: holdingIndex + 1,
+                            })}
+                          </small>
+                          <strong>
+                            {holding.name || t('manualSetup.newInvestment')}
+                          </strong>
                         </div>
                         <button
                           type="button"
                           onClick={() => props.removeHolding(holding.id)}
                         >
-                          Remove
+                          {t('manualSetup.remove')}
                         </button>
                       </header>
 
                       <div className="twin-holding-grid">
                         {[
-                          ['Asset name', 'name', 'e.g. Company or fund'],
-                          ['Symbol', 'symbol', 'Optional'],
-                          ['Asset type', 'assetType', 'e.g. Stock or ETF'],
-                          ['Quantity', 'quantity', '0'],
-                          ['Current price', 'currentPrice', '0'],
-                          ['Currency', 'currency', props.selectedCurrency?.code || 'USD'],
+                          [
+                            t('manualSetup.assetName'),
+                            'name',
+                            t('manualSetup.assetNamePlaceholder'),
+                          ],
+                          [
+                            t('manualSetup.symbol'),
+                            'symbol',
+                            t('manualSetup.optional'),
+                          ],
+                          [
+                            t('manualSetup.assetType'),
+                            'assetType',
+                            t('manualSetup.assetTypePlaceholder'),
+                          ],
+                          [t('manualSetup.quantity'), 'quantity', '0'],
+                          [t('manualSetup.currentPrice'), 'currentPrice', '0'],
+                          [
+                            t('manualSetup.currency'),
+                            'currency',
+                            props.selectedCurrency?.code || 'USD',
+                          ],
                         ].map(([label, field, placeholder]) => (
                           <label className="twin-field" key={field}>
                             <span>{label}</span>
@@ -358,7 +384,7 @@ export default function ManualSetupFlow(props: Props) {
                     className="twin-add-another"
                     onClick={props.addHolding}
                   >
-                    + Add another investment
+                    + {t('manualSetup.addAnotherInvestment')}
                   </button>
                 </div>
               )}
@@ -368,12 +394,9 @@ export default function ManualSetupFlow(props: Props) {
           {step === 'goals' && (
             <section className="twin-focus twin-goals-stage">
               <div className="twin-focus-heading">
-                <p>GOALS</p>
-                <h2>What are you building toward?</h2>
-                <span>
-                  Give Portelyx something meaningful to protect, test and
-                  plan around.
-                </span>
+                <p>{t('manualSetup.goalsEyebrow')}</p>
+                <h2>{t('manualSetup.goalsTitle')}</h2>
+                <span>{t('manualSetup.goalsDescription')}</span>
               </div>
 
               <GoalBuilder
@@ -388,62 +411,66 @@ export default function ManualSetupFlow(props: Props) {
             <section className="twin-reveal">
               <div className="twin-reveal-heading">
                 <span className="twin-live-dot" />
-                <p>YOUR FINANCIAL TWIN</p>
-                <h2>Ready to come to life.</h2>
-                <span>
-                  Review the foundation Portelyx will use for simulations.
-                </span>
+                <p>{t('manualSetup.reviewEyebrow')}</p>
+                <h2>{t('manualSetup.reviewTitle')}</h2>
+                <span>{t('manualSetup.reviewDescription')}</span>
               </div>
 
               <div className="twin-reveal-grid">
                 <article className="twin-reveal-hero">
-                  <span>MONTHLY SURPLUS</span>
+                  <span>{t('manualSetup.monthlySurplus')}</span>
                   <strong>{formatEnteredMoney(String(monthlySurplus))}</strong>
-                  <small>Income minus monthly spending</small>
+                  <small>{t('manualSetup.incomeMinusSpending')}</small>
                 </article>
 
                 <article>
-                  <span>Base currency</span>
+                  <span>{t('manualSetup.baseCurrency')}</span>
                   <strong>{props.selectedCurrency?.code || '—'}</strong>
                 </article>
 
                 <article>
-                  <span>Available cash</span>
+                  <span>{t('manualSetup.availableCash')}</span>
                   <strong>{formatEnteredMoney(props.availableCash)}</strong>
                 </article>
 
                 <article>
-                  <span>Investments</span>
+                  <span>{t('manualSetup.investments')}</span>
                   <strong>{props.holdings.length}</strong>
                 </article>
 
                 <article>
-                  <span>Goals</span>
+                  <span>{t('manualSetup.goals')}</span>
                   <strong>{props.goals.length}</strong>
                 </article>
               </div>
 
               <div className="twin-review-list">
                 <div>
-                  <span>Financial foundation</span>
+                  <span>{t('manualSetup.financialFoundation')}</span>
                   <strong>
-                    {props.selectedCurrency ? 'Ready' : 'Needs currency'}
+                    {props.selectedCurrency
+                      ? t('manualSetup.ready')
+                      : t('manualSetup.needsCurrency')}
                   </strong>
                 </div>
                 <div>
-                  <span>Investments</span>
+                  <span>{t('manualSetup.investments')}</span>
                   <strong>
                     {props.holdings.length
-                      ? `${props.holdings.length} added`
-                      : 'Skipped'}
+                      ? t('manualSetup.added', {
+                          count: props.holdings.length,
+                        })
+                      : t('manualSetup.skipped')}
                   </strong>
                 </div>
                 <div>
-                  <span>Goals</span>
+                  <span>{t('manualSetup.goals')}</span>
                   <strong>
                     {props.goals.length
-                      ? `${props.goals.length} added`
-                      : 'Skipped'}
+                      ? t('manualSetup.added', {
+                          count: props.goals.length,
+                        })
+                      : t('manualSetup.skipped')}
                   </strong>
                 </div>
               </div>
@@ -457,7 +484,7 @@ export default function ManualSetupFlow(props: Props) {
             className="twin-back-button"
             onClick={index === 0 ? props.onBack : previous}
           >
-            ← {index === 0 ? 'Setup options' : 'Back'}
+            ← {index === 0 ? t('manualSetup.setupOptions') : t('common.back')}
           </button>
 
           {step !== 'review' ? (
@@ -468,10 +495,10 @@ export default function ManualSetupFlow(props: Props) {
               disabled={step === 'essentials' && !props.selectedCurrency}
             >
               {step === 'investments' && props.holdings.length === 0
-                ? 'Skip for now'
+                ? t('manualSetup.skipForNow')
                 : step === 'goals' && props.goals.length === 0
-                  ? 'Skip for now'
-                  : 'Continue'}
+                  ? t('manualSetup.skipForNow')
+                  : t('common.continue')}
               <span>→</span>
             </button>
           ) : (
@@ -482,8 +509,8 @@ export default function ManualSetupFlow(props: Props) {
               onClick={props.buildFinancialTwin}
             >
               {props.profileLoading
-                ? 'Building Financial Twin...'
-                : 'Build my Financial Twin'}
+                ? t('manualSetup.buildingFinancialTwin')
+                : t('manualSetup.buildMyFinancialTwin')}
               <span>{props.profileLoading ? '···' : '→'}</span>
             </button>
           )}

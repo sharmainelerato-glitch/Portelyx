@@ -26,3 +26,28 @@ dist-ssr
 # Environment variables / secrets
 .env
 .env.*
+# Local secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Build and cache
+node_modules/
+dist/
+.vercel/
+__pycache__/
+*.pyc
+
+# Translation working files
+portelyx-southern-translations/
+portelyx-translated/
+translation-backup-before-merge/
+
+# Temporary backups and archives
+*.bak
+*.zip
+
+# Local translation helper scripts
+portelyx_*.py

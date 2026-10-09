@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from 'react-oidc-context'
 
 import './App.css'
 import { apiUrl } from './api'
@@ -17,6 +18,9 @@ import {
 import ManualSetupFlow from './ManualSetupFlow'
 
 import WorkspaceShell from './WorkspaceShell'
+import ProfilePage from './ProfilePage'
+import SettingsPage from './SettingsPage'
+import { usePortelyxLanguage } from './i18n'
 
 import StatementSetupFlow, {
 
@@ -37,6 +41,10 @@ type View =
   | 'manual-setup'
 
   | 'workspace'
+
+  | 'profile'
+
+  | 'settings'
 
 
 
@@ -175,6 +183,8 @@ type HoldingInput = {
 }
 
 function App() {
+  const auth = useAuth()
+  const { t } = usePortelyxLanguage()
 
   const [view, setView] = useState<View>('landing')
 
@@ -272,6 +282,18 @@ const [connectedSource, setConnectedSource] =
   loadCurrencies()
 
 }, [])
+
+  const signOut = () => {
+  auth.removeUser()
+
+  const clientId = '1ekp541q11vbb85e4olec8295i'
+  const logoutUri = window.location.origin
+  const cognitoDomain =
+    'https://us-west-2ezynmldtv.auth.us-west-2.amazoncognito.com'
+
+  window.location.href =
+    `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`
+}
 
   const goHome = () => {
 
@@ -809,6 +831,25 @@ data_sources:
 
 }
 
+  if (view === 'profile') {
+  return (
+    <ProfilePage
+      onBack={() => setView('setup')}
+      onOpenSettings={() => setView('settings')}
+    />
+  )
+}
+
+  if (view === 'settings') {
+  return (
+    <SettingsPage
+      onBack={() => setView('setup')}
+      onOpenProfile={() => setView('profile')}
+      onSignOut={signOut}
+    />
+  )
+}
+
   if (view === 'workspace' && financialProfile) {
 
   return (
@@ -833,7 +874,13 @@ data_sources:
 
       onRunJobLossScenario={runJobLossScenario}
       isDemoProfile={isDemoProfile}
-      onUseMyData={openSetup}
+      onUseMyData={() => {
+  if (auth.isAuthenticated) {
+    openSetup()
+  } else {
+    void auth.signinRedirect()
+  }
+}}
 
       onExit={openSetup}
 
@@ -953,225 +1000,233 @@ if (view === 'manual-setup') {
 }
 
 
-
-
-
-
-
-  if (view === 'setup') {
-
-    return (
-
-      <main className="onboarding-page">
-
-        <nav className="navbar">
-
-          <div className="logo">
-           <img src="/portelyx-logo.png" alt="PORTELYX" />
-          </div>
-
-          <button
-
-            className="nav-button"
-
-            type="button"
-
-            onClick={goHome}
-
-          >
-
-            ← Back
-
-          </button>
-
-        </nav>
-
-        <section className="setup-container">
-
-          <div className="setup-heading">
-
-            <p className="onboarding-label">
-
-              SET UP PORTELYX
-
-            </p>
-
-            <h1>Build your financial picture.</h1>
-
-            <p>
-
-              Choose how you'd like to get started. You can
-
-              always add more later.
-
-            </p>
-
-          </div>
-
-          <div className="setup-options">
-
-            <button
-
-              className="setup-card"
-
-              type="button"
-
-              onClick={() => setView('connect-accounts')}
-
-            >
-
-              <div className="setup-icon">
-
-                <span>⌁</span>
-
-              </div>
-
-               <div className="setup-card-copy">
-
-  <div className="setup-title-row">
-
-    <h2>Connect your accounts</h2>
-
-  </div>
-
-                <p>
-
-                  Securely import your financial information
-
-                  and keep your picture up to date.
-
-                </p>
-
-              </div>
-
-              <span className="setup-arrow">→</span>
-
-            </button>
-
-            <button
-
-             className="setup-card"
-
-             type="button"
-
-             onClick={() => {
-
-  setProfileSource('manual')
-
-  setPendingStatement(null)
-  setConnectedSource(null)
-
-  setView('manual-setup')
-
-}}
-
-            >
-
-              <div className="setup-icon">
-
-                <span>＋</span>
-
-              </div>
-
-              <div className="setup-card-copy">
-
-                <h2>Add finances manually</h2>
-
-                <p>
-
-                  Build your financial twin yourself and choose
-
-                  exactly what Portelyx knows.
-
-                </p>
-
-              </div>
-
-              <span className="setup-arrow">→</span>
-
-            </button>
-
-            <button
-
-              className="setup-card"
-
-              type="button"
-
-              onClick={openDemoWorkspace}
-
-            >
-
-              <div className="setup-icon">
-
-                <span>◇</span>
-
-              </div>
-
-              <div className="setup-card-copy">
-
-                <h2>Explore with demo data</h2>
-
-                <p>
-
-                  Experience Portelyx with a ready-made financial
-
-                  profile before adding your own.
-
-                </p>
-
-              </div>
-
-              <span className="setup-arrow">→</span>
-
-            </button>
-
-          </div>
-
-          <p className="setup-note">
-
-            Your financial information stays under your control.
-
-          </p>
-
-        </section>
-
-      </main>
-
-    )
-
-  }
+ if (view === 'setup') {
+  return (
+    <main className="onboarding-page">
+      <nav className="navbar">
+        <div className="logo">
+          <img src="/portelyx-logo.png" alt="PORTELYX" />
+        </div>
+
+        <div className="nav-actions">
+          <button
+            className="nav-button"
+            type="button"
+            onClick={goHome}
+          >
+            ← {t('common.back')}
+          </button>
+
+          {auth.isAuthenticated && (
+            <button
+              className="nav-button"
+              type="button"
+              onClick={() => setView('profile')}
+            >
+              {t('landing.profile')}
+            </button>
+          )}
+
+          {auth.isAuthenticated && (
+            <button
+              className="nav-button"
+              type="button"
+              onClick={signOut}
+            >
+              {t('common.signOut')}
+            </button>
+          )}
+        </div>
+      </nav>
+
+      <section className="setup-container">
+        <div className="setup-heading">
+          <p className="onboarding-label">
+            {t('landing.setupLabel')}
+          </p>
+
+          <h1>{t('landing.setupTitle')}</h1>
+
+          <p>{t('landing.setupDescription')}</p>
+        </div>
+
+        <div className="setup-options">
+          <button
+            className="setup-card"
+            type="button"
+            onClick={() => setView('connect-accounts')}
+          >
+            <div className="setup-icon">
+              <span>⌁</span>
+            </div>
+
+            <div className="setup-card-copy">
+              <div className="setup-title-row">
+                <h2>{t('landing.connectAccounts')}</h2>
+              </div>
+
+              <p>{t('landing.connectAccountsDescription')}</p>
+            </div>
+
+            <span className="setup-arrow">→</span>
+          </button>
+
+          <button
+            className="setup-card"
+            type="button"
+            onClick={() => {
+              setProfileSource('manual')
+              setPendingStatement(null)
+              setConnectedSource(null)
+              setView('manual-setup')
+            }}
+          >
+            <div className="setup-icon">
+              <span>＋</span>
+            </div>
+
+            <div className="setup-card-copy">
+              <h2>{t('landing.addFinancesManually')}</h2>
+              <p>{t('landing.manualDescription')}</p>
+            </div>
+
+            <span className="setup-arrow">→</span>
+          </button>
+
+          <button
+            className="setup-card"
+            type="button"
+            onClick={openDemoWorkspace}
+          >
+            <div className="setup-icon">
+              <span>◇</span>
+            </div>
+
+            <div className="setup-card-copy">
+              <h2>{t('landing.exploreDemoData')}</h2>
+              <p>{t('landing.demoDescription')}</p>
+            </div>
+
+            <span className="setup-arrow">→</span>
+          </button>
+        </div>
+
+        <p className="setup-note">
+          {t('landing.financialControl')}
+        </p>
+      </section>
+    </main>
+  )
+}
 
   return (
     <main className="landing-page landing-minimal">
       <nav className="navbar landing-nav">
-        <button className="landing-brand" type="button" onClick={goHome} aria-label="Portelyx home">PORTELYX</button>
-        <button className="nav-button landing-enter" type="button" onClick={openSetup}>Enter platform <span>→</span></button>
+        <button className="landing-brand" type="button" onClick={goHome} aria-label={t('landing.homeLabel')}>PORTELYX</button>
+        <button
+  className="nav-button landing-enter"
+  type="button"
+  onClick={() => {
+    if (auth.isAuthenticated) {
+      openSetup()
+    } else {
+      void auth.signinRedirect()
+    }
+  }}
+>
+  {auth.isAuthenticated
+    ? t('nav.enterPlatform')
+    : t('nav.signIn')}
+  <span>→</span>
+</button>
       </nav>
 
       <section className="landing-hero">
-        <div className="landing-copy">
-          <div className="landing-kicker"><span className="eyebrow-dot" /> FINANCIAL DECISION TWIN</div>
-          <h1>Rehearse your financial<span> decisions before you live them.</span></h1>
-          <p>Explore possible futures, stress-test important choices, and discover what would need to change before your answer changes.</p>
-          <div className="landing-actions">
-            <button className="primary-button landing-primary" type="button" onClick={openSetup}>Build my Financial Twin <span>→</span></button>
-            <button className="landing-demo" type="button" onClick={openDemoWorkspace}>Try the demo</button>
-          </div>
-        </div>
+  <div className="landing-copy">
+    <div className="landing-kicker">
+      <span className="eyebrow-dot" /> {t('landing.kicker')}
+    </div>
 
-        <div className="future-visual" aria-label="One financial decision branching into possible futures">
-          <div className="future-question"><span>YOUR DECISION</span><strong>What if I buy it?</strong></div>
-          <div className="future-stem" aria-hidden="true" />
-          <div className="future-paths">
-            <div className="future-card"><span>NOW</span><strong>Buy</strong><small>Test resilience</small></div>
-            <div className="future-card future-card-featured"><span>ALTERNATIVE</span><strong>Wait</strong><small>Compare the future</small></div>
-            <div className="future-card"><span>OPTION</span><strong>Finance</strong><small>Find the breakpoint</small></div>
-          </div>
-          <div className="future-answer"><span className="future-answer-dot" /><p><strong>PORTELYX</strong> calculates which choice survives the most futures.</p></div>
-        </div>
-      </section>
+    <h1>
+      {t('landing.heroTitle')}
+    </h1>
 
-      <div className="landing-footnote"><span>Your finances</span><i>→</i><span>Your possible futures</span><i>→</i><span>Your decision</span></div>
+    <p>{t('landing.heroDescription')}</p>
+
+    <div className="landing-actions">
+      <button
+        className="primary-button landing-primary"
+        type="button"
+        onClick={() => {
+          if (auth.isAuthenticated) {
+            openSetup()
+          } else {
+            void auth.signinRedirect()
+          }
+        }}
+      >
+        {t('landing.buildTwin')} <span>→</span>
+      </button>
+
+      <button
+        className="landing-demo"
+        type="button"
+        onClick={openDemoWorkspace}
+      >
+        {t('landing.tryDemo')}
+      </button>
+    </div>
+  </div>
+
+  <div
+    className="future-visual"
+    aria-label={t('landing.futureVisualLabel')}
+  >
+    <div className="future-question">
+      <span>{t('landing.yourDecision')}</span>
+      <strong>{t('landing.decisionQuestion')}</strong>
+    </div>
+
+    <div className="future-stem" aria-hidden="true" />
+
+    <div className="future-paths">
+      <div className="future-card">
+        <span>{t('landing.now')}</span>
+        <strong>{t('landing.buy')}</strong>
+        <small>{t('landing.testResilience')}</small>
+      </div>
+
+      <div className="future-card future-card-featured">
+        <span>{t('landing.alternative')}</span>
+        <strong>{t('landing.wait')}</strong>
+        <small>{t('landing.compareFuture')}</small>
+      </div>
+
+      <div className="future-card">
+        <span>{t('landing.option')}</span>
+        <strong>{t('landing.finance')}</strong>
+        <small>{t('landing.findBreakpoint')}</small>
+      </div>
+    </div>
+
+    <div className="future-answer">
+      <span className="future-answer-dot" />
+      <p>
+        <strong>PORTELYX</strong> {t('landing.calculatesFuture')}
+      </p>
+    </div>
+  </div>
+</section>
+
+<div className="landing-footnote">
+  <span>{t('landing.yourFinances')}</span>
+  <i>→</i>
+  <span>{t('landing.possibleFutures')}</span>
+  <i>→</i>
+  <span>{t('landing.yourDecisionFootnote')}</span>
+</div>
+
+      
     </main>
   )
 
