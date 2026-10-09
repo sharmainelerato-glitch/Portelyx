@@ -311,3 +311,214 @@ And eventually:
 **Lerato Mokgatla**
 
 PORTELYX © 2026
+---
+
+## Live Application
+
+**Try PORTELYX:** https://portelyx.vercel.app
+
+**Source code:** https://github.com/sharmainelerato-glitch/Portelyx
+
+PORTELYX has a deployed React frontend and a production FastAPI backend hosted on AWS Elastic Beanstalk.
+
+The backend is served through Amazon CloudFront:
+
+https://d6zmnirfl058n.cloudfront.net
+
+The application includes an interactive Financial Decision Twin, an AI-assisted financial workspace, and a live MCP Simulator.
+
+---
+
+## MCP Integration and Interactive Simulator
+
+PORTELYX exposes its financial capabilities through a Model Context Protocol (MCP) server.
+
+The backend includes:
+
+- An authenticated MCP endpoint.
+- OAuth-based access-token handling.
+- 13 registered MCP tools.
+- MCP initialization and tool discovery.
+- Tool execution through MCP `tools/call`.
+- An interactive web-based MCP Simulator.
+- A synthetic financial profile for demonstration.
+- Financial simulation results returned through the MCP workflow.
+
+### How the MCP Simulator Works
+
+1. Open PORTELYX.
+2. Navigate to **MCP Simulator**.
+3. Choose a financial scenario.
+4. Run the simulation.
+5. Review the resulting financial metrics.
+6. Inspect the MCP tool activity and response.
+7. Compare the simulated outcome without changing the original Financial Twin.
+
+### Verified Demo Scenario
+
+A simulated increase of R3,000 in monthly expenses produces:
+
+| Metric | Result |
+|---|---:|
+| Monthly income | R32,000 |
+| Monthly expenses | R24,500 |
+| Monthly surplus | R7,500 |
+
+This scenario was tested successfully against the deployed production backend.
+
+### Alexa+ Track
+
+PORTELYX is designed around an Alexa+-oriented conversational financial experience.
+
+For the hackathon, the web-based MCP Simulator demonstrates real MCP protocol interaction without requiring an Alexa+ device or claiming a direct Alexa+ runtime connection.
+
+---
+
+## Multilingual Experience
+
+PORTELYX includes a multilingual interface designed to make financial decision tools more accessible across different regions.
+
+The application includes:
+
+- A language-selection system.
+- Regional translation dictionaries.
+- Support for African and international language options.
+- English fallback when a translation is unavailable.
+- Multilingual AI conversation capabilities.
+
+Translation coverage varies by language. Some interface strings continue to use English fallback while additional translations are developed and reviewed.
+
+---
+
+## Expanded Financial Workspace
+
+PORTELYX includes the following workspace capabilities:
+
+### Decision Twin
+
+Compare buying now, waiting, and financing a purchase through deterministic financial simulations.
+
+Review:
+
+- Decision Resilience Scores.
+- Financial stress-test survival.
+- Ending and minimum cash balances.
+- Financing costs.
+- Breakpoints and Path to Yes.
+
+### Goal Builder
+
+Create and explore financial goals using the application's goal-planning capabilities.
+
+### Financial Profile and Setup
+
+PORTELYX provides financial-profile setup workflows, including manual entry and statement-based setup.
+
+### Profile and Settings
+
+The application includes dedicated Profile and Settings pages for managing the user experience.
+
+### Legal and Information Pages
+
+PORTELYX also provides:
+
+- Privacy Policy.
+- Terms and Conditions.
+- Financial Disclaimer.
+- Contact page.
+
+---
+
+## Production Deployment
+
+### Frontend
+
+- React, TypeScript and Vite.
+- Hosted on Vercel.
+- Connected to the PORTELYX GitHub repository.
+
+### Backend
+
+- Python and FastAPI.
+- AWS Elastic Beanstalk.
+- Python 3.14 on Amazon Linux 2023.
+- Gunicorn with Uvicorn workers.
+- Nginx.
+- Amazon CloudFront.
+
+The production backend deployment was updated to `portelyx-v3` on 9 October 2026.
+
+### Verified Production Tests
+
+The following checks were completed successfully:
+
+- Frontend production build.
+- GitHub deployment.
+- MCP Simulator interface availability.
+- Backend API availability.
+- MCP Simulator endpoint discovery.
+- Live MCP financial simulation.
+- Decision Twin financial calculations.
+
+These checks demonstrate the working deployed features; they do not constitute a complete security or production-readiness audit.
+
+---
+
+## Updated Architecture
+
+```text
+USER
+  |
+  v
+PORTELYX WEB APPLICATION
+React + TypeScript + Vite
+Hosted on Vercel
+  |
+  +-- Financial Decision Twin
+  +-- Goal Builder
+  +-- Financial Profile
+  +-- PORTELYX AI
+  +-- Multilingual Interface
+  +-- MCP Simulator
+  |
+  v
+AMAZON CLOUDFRONT
+  |
+  v
+AWS ELASTIC BEANSTALK
+FastAPI + Gunicorn + Uvicorn
+  |
+  +-- Deterministic Financial Engines
+  |     +-- Decision Simulation
+  |     +-- Financial Stress Testing
+  |     +-- Resilience Scoring
+  |     +-- Breakpoint Analysis
+  |     +-- Goal Intelligence
+  |     +-- Decision Memory
+  |
+  +-- AI Interpretation Layer
+  |
+  +-- Authenticated MCP Server
+        +-- MCP Tool Discovery
+        +-- MCP Tool Execution
+        +-- Financial Scenario Simulation
+        +-- Synthetic Demo Profile
+
+```
+
+The AI interpretation layer and deterministic financial engines remain separate. Financial decisions remain under human control.
+
+---
+
+## Demo Guide for Hackathon Judges
+
+1. Visit https://portelyx.vercel.app.
+2. Explore the Financial Decision Twin.
+3. Compare buying now, waiting and financing.
+4. Review resilience scores and stress-test results.
+5. Open the MCP Simulator.
+6. Run a financial scenario using the synthetic demo profile.
+7. Inspect the returned financial metrics and MCP tool activity.
+8. Explore the multilingual interface and additional workspace features.
+
+PORTELYX is a financial decision-support prototype. Simulated outcomes are not guarantees or personalized professional financial advice.
